@@ -364,7 +364,8 @@ async function handleConnectClick() {
 
             // Check version and download if needed
             if (window.__TAURI__?.core?.invoke) {
-                const result = await window.__TAURI__.core.invoke('check_version_and_download', { proxyUrl });
+                const skipUpdate = !document.getElementById('check-updates-checkbox').checked;
+                const result = await window.__TAURI__.core.invoke('check_version_and_download', { proxyUrl, skipUpdate });
 
                 if (result.success) {
                     if (result.needsUpdate) {

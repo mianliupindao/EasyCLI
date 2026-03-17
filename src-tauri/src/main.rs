@@ -374,12 +374,31 @@ async fn fetch_latest_release(proxy_url: String) -> Result<VersionInfo, AppError
 async fn check_version_and_download(
     window: tauri::Window,
     proxy_url: Option<String>,
+    skip_update: Option<bool>,
 ) -> Result<serde_json::Value, String> {
     let proxy = proxy_url.unwrap_or_default();
     let dir = app_dir().map_err(|e| e.to_string())?;
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 
     let local = current_local_info().map_err(|e| e.to_string())?;
+    
+    // If the user chooses to skip update, and we have a local version, just use it.
+    if skip_update.unwrap_or(false) {
+        if let Some((ver, path)) = &local {
+            ensure_config(path).map_err(|e| e.to_string())?;
+            return Ok(json!(OpResult {
+                success: true,
+                error: None,
+                path: Some(path.to_string_lossy().to_string()),
+                version: Some(ver.clone()),
+                needsUpdate: Some(false),
+                isLatest: Some(true),
+                latestVersion: None
+            }));
+        }
+        // If local is not found but skip_update is true, we fallback to downloading it.
+    }
+
     window
         .emit("download-status", json!({"status": "checking"}))
         .ok();
