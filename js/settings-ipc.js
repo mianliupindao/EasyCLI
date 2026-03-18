@@ -34,7 +34,7 @@ if (window.__TAURI__?.event?.listen) {
                 console.error('Error stopping keep-alive on process exit error:', error);
             });
         }
-        showProcessClosedError(window.t('settings.process_exited') + `: ${errorData.code}`);
+        showProcessClosedError(window.t('settings.process_exited_code', { code: errorData.code }));
     });
 
     window.__TAURI__.event.listen('cliproxyapi-restarted', (event) => {

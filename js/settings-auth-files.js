@@ -148,7 +148,7 @@ async function deleteSelectedAuthFiles() {
                         showError(window.t('settings.operation_failed', { error: result.error }));
                     } else {
                         const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
-                        showError(window.t('settings.auth.delete_failed_count').replace('{count}', result.errorCount).replace('{fileText}', fileText));
+                        showError(window.t('settings.auth.delete_failed_count', { count: result.errorCount, fileText: fileText }));
                     }
                 }
             } catch (error) {
@@ -318,7 +318,7 @@ function uploadLocalFile() {
         const invalidFiles = files.filter(file => !file.name.toLowerCase().endsWith('.json'));
         if (invalidFiles.length > 0) {
             const fileList = invalidFiles.map(f => f.name).join(', ');
-            showError(window.t('settings.auth.upload_invalid_type').replace('{files}', fileList));
+            showError(window.t('settings.auth.upload_invalid_type', { files: fileList }));
             document.body.removeChild(fileInput);
             return;
         }
@@ -340,19 +340,14 @@ async function uploadFilesToServer(files) {
         const result = await configManager.uploadAuthFiles(files);
         if (result.success && result.successCount > 0) {
             const fileText = result.successCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
-            showSuccessMessage(window.t('settings.auth.upload_success_count').replace('{count}', result.successCount).replace('{fileText}', fileText));
+            showSuccessMessage(window.t('settings.auth.upload_success_count', { count: result.successCount, fileText: fileText }));
         }
         if (result.errorCount > 0) {
             const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
             if (result.errors && result.errors.length <= 3) {
-                showError(window.t('settings.auth.upload_failed_details')
-                    .replace('{count}', result.errorCount)
-                    .replace('{fileText}', fileText)
-                    .replace('{details}', result.errors.join(', ')));
+                showError(window.t('settings.auth.upload_failed_details', { count: result.errorCount, fileText: fileText, details: result.errors.join(', ') }));
             } else {
-                showError(window.t('settings.auth.upload_failed_count')
-                    .replace('{count}', result.errorCount)
-                    .replace('{fileText}', fileText));
+                showError(window.t('settings.auth.upload_failed_count', { count: result.errorCount, fileText: fileText }));
             }
         }
         if (result.error) {
@@ -378,11 +373,11 @@ async function downloadSelectedAuthFiles() {
         const result = await configManager.downloadAuthFiles(Array.from(selectedAuthFiles));
         if (result.success && result.successCount > 0) {
             const fileText = result.successCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
-            showSuccessMessage(window.t('settings.auth.download_success_count').replace('{count}', result.successCount).replace('{fileText}', fileText));
+            showSuccessMessage(window.t('settings.auth.download_success_count', { count: result.successCount, fileText: fileText }));
         }
         if (result.errorCount > 0) {
             const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
-            showError(window.t('settings.auth.download_failed_count').replace('{count}', result.errorCount).replace('{fileText}', fileText));
+            showError(window.t('settings.auth.download_failed_count', { count: result.errorCount, fileText: fileText }));
         }
         if (result.error) {
             showError(window.t('settings.operation_failed', { error: result.error }));

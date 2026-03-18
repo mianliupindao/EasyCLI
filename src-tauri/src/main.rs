@@ -1247,8 +1247,6 @@ fn start_cliproxyapi(
 #[tauri::command]
 fn restart_cliproxyapi(
     app: tauri::AppHandle,
-    tray_open_settings: Option<String>,
-    tray_quit: Option<String>,
 ) -> Result<(), String> {
     // Kill existing detached process if PID is stored
     if let Some(pid) = *PROCESS_PID.lock() {
@@ -1661,7 +1659,7 @@ fn open_settings_window(app: tauri::AppHandle, title: Option<String>) -> Result<
 
     // Otherwise create it and show
     let url = WebviewUrl::App("settings.html".into());
-    let mut builder = WebviewWindowBuilder::new(&app, "settings", url)
+    let builder = WebviewWindowBuilder::new(&app, "settings", url)
         .title(title.unwrap_or_else(|| "EasyCLI Control Panel".to_string()))
         .inner_size(930.0, 600.0)
         .resizable(false);

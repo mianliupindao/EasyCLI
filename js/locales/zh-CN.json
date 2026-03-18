@@ -42,7 +42,13 @@
     "failed_check_version": "检查版本失败：{error}",
     "tauri_required": "此功能需要 Tauri 环境",
     "error_checking_version": "检查版本出错：{error}",
-    "operation_failed": "操作失败：{error}"
+    "operation_failed": "操作失败：{error}",
+    "pwd_required": "必须设置密码才能使用本地模式",
+    "pwd_empty": "请输入密码",
+    "pwd_confirm_empty": "请确认密码",
+    "remote_url_empty": "请输入远程 URL",
+    "pwd_remote_empty": "请输入密码",
+    "newVersionDetail": "有新版本可用。\n最新版本：{version}"
   },
   "settings": {
     "title": "EasyCLI 设置",
@@ -70,6 +76,7 @@
     "invalid": "无效的输入",
     "process_closed": "CLIProxyAPI 进程已关闭",
     "process_exited": "CLIProxyAPI 进程异常退出",
+    "process_exited_code": "CLIProxyAPI 进程异常退出，退出码：{code}",
     "process_restarted": "CLIProxyAPI 进程重启成功！",
     "confirm_delete_title": "确认删除",
     "gemini_keys": "Gemini API 密钥",

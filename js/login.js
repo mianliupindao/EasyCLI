@@ -203,7 +203,7 @@ passwordCancelBtn.addEventListener('click', () => {
     passwordInput1.value = '';
     passwordInput2.value = '';
     // User cancelled, return to login page, do not start CLIProxyAPI
-    showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
+    showError(window.t('login.pwd_required'));
 });
 
 passwordSaveBtn.addEventListener('click', async () => {
@@ -212,12 +212,12 @@ passwordSaveBtn.addEventListener('click', async () => {
 
     // Validate password
     if (!password1) {
-        showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
+        showError(window.t('login.pwd_empty'));
         return;
     }
 
     if (!password2) {
-        showError(window.t('login.confirmPwdLabel') + ' ' + window.t('settings.invalid'));
+        showError(window.t('login.pwd_confirm_empty'));
         return;
     }
 
@@ -380,7 +380,7 @@ async function handleConnectClick() {
                     if (result.needsUpdate) {
                         // Update needed, show update dialog
                         updateDialogMessage.textContent =
-                            `${window.t('login.newVersionMsg')}\nVersion: ${result.latestVersion}`;
+                            window.t('login.newVersionDetail', { version: result.latestVersion });
                         updateDialog.classList.add('show');
 
                         // Save current path information
@@ -451,12 +451,12 @@ async function handleConnectClick() {
     const password = passwordInput.value.trim();
 
     if (!remoteUrl) {
-        showError(window.t('login.remoteUrlLabel') + ' ' + window.t('settings.invalid'));
+        showError(window.t('login.remote_url_empty'));
         return;
     }
 
     if (!password) {
-        showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
+        showError(window.t('login.pwd_remote_empty'));
         return;
     }
 
@@ -605,7 +605,7 @@ function handleDownloadStatus(statusData) {
             progressLabel.textContent = window.t('login.download_completed');
             progressFill.style.width = '100%';
             progressText.textContent = '100%';
-            showSuccess(window.t('login.download_success').replace('{version}', statusData.version));
+            showSuccess(window.t('login.download_success', { version: statusData.version }));
 
             // Hide progress bar
             setTimeout(() => {
@@ -615,7 +615,7 @@ function handleDownloadStatus(statusData) {
 
         case 'latest':
             progressContainer.classList.remove('show');
-            showSuccess(window.t('login.already_latest').replace('{version}', statusData.version));
+            showSuccess(window.t('login.already_latest', { version: statusData.version }));
             break;
 
         case 'update-available':

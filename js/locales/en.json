@@ -42,7 +42,13 @@
     "failed_check_version": "Failed to check version: {error}",
     "tauri_required": "This feature requires Tauri environment",
     "error_checking_version": "Error checking version: {error}",
-    "operation_failed": "Operation failed: {error}"
+    "operation_failed": "Operation failed: {error}",
+    "pwd_required": "Password must be set to use Local mode",
+    "pwd_empty": "Please enter password",
+    "pwd_confirm_empty": "Please confirm password",
+    "remote_url_empty": "Please enter a remote URL",
+    "pwd_remote_empty": "Please enter a password",
+    "newVersionDetail": "A new version is available.\nLatest version: {version}"
   },
   "settings": {
     "title": "EasyCLI Settings",
@@ -70,6 +76,7 @@
     "invalid": "Invalid input",
     "process_closed": "CLIProxyAPI process has closed",
     "process_exited": "CLIProxyAPI process exited abnormally",
+    "process_exited_code": "CLIProxyAPI process exited abnormally, exit code: {code}",
     "process_restarted": "CLIProxyAPI process restarted successfully!",
     "confirm_delete_title": "Confirm Delete",
     "gemini_keys": "Gemini API Keys",

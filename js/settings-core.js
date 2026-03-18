@@ -333,10 +333,7 @@ async function applyAllSettings() {
                 console.log('Port configuration has changed, need to restart CLIProxyAPI process');
                 showSuccessMessage(window.t('settings.success'));
                 if (window.__TAURI__?.core?.invoke) {
-                    window.__TAURI__.core.invoke('restart_cliproxyapi', {
-                        trayOpenSettings: window.t('tray.settings'),
-                        trayQuit: window.t('tray.quit')
-                    });
+                    window.__TAURI__.core.invoke('restart_cliproxyapi');
                 }
             }
         } else {
