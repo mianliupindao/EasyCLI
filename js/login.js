@@ -77,7 +77,7 @@ function validateProxyUrl(proxyUrl) {
 
     return {
         valid: false,
-        error: 'Invalid proxy format. Supported formats: http://host:port, https://host:port, socks5://host:port, http://user:pass@host:port, https://user:pass@host:port, socks5://user:pass@host:port'
+        error: window.t('login.proxy_invalid')
     };
 }
 
@@ -85,7 +85,7 @@ function validateProxyUrl(proxyUrl) {
 async function openSettingsWindowPreferNew() {
     try {
         if (window.__TAURI__?.core?.invoke) {
-            await window.__TAURI__.core.invoke('open_settings_window');
+            await window.__TAURI__.core.invoke('open_settings_window', { title: window.t('settings.title') });
             // Backend command closes the login window; avoid double-close that could exit the app.
             return;
         }
@@ -101,9 +101,12 @@ updateCancelBtn.addEventListener('click', async () => {
     localStorage.setItem('type', "local");
     if (window.__TAURI__?.core?.invoke) {
         try {
-            const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi');
+            const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi', {
+                trayOpenSettings: window.t('tray.settings'),
+                trayQuit: window.t('tray.quit')
+            });
             if (!startRes || !startRes.success) {
-                showError('CLIProxyAPI process start failed');
+                showError(window.t('login.process_start_failed'));
                 return;
             }
             // Save the generated password for local mode HTTP requests
@@ -118,7 +121,7 @@ updateCancelBtn.addEventListener('click', async () => {
                 });
             }
         } catch (e) {
-            showError('CLIProxyAPI process start error');
+            showError(window.t('login.process_start_error'));
             return;
         }
         await openSettingsWindowPreferNew();
@@ -130,7 +133,7 @@ updateConfirmBtn.addEventListener('click', async () => {
     // User chose to update, start downloading
     try {
         continueBtn.disabled = true;
-        continueBtn.textContent = 'Updating...';
+        continueBtn.textContent = window.t('login.updating');
 
         if (window.__TAURI__?.core?.invoke) {
             const proxyUrl = proxyInput.value.trim();
@@ -155,9 +158,12 @@ updateConfirmBtn.addEventListener('click', async () => {
                 } else {
                     // Password is set: start process then go to settings
                     try {
-                        const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi');
+                        const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi', {
+                            trayOpenSettings: window.t('tray.settings'),
+                            trayQuit: window.t('tray.quit')
+                        });
                         if (!startRes || !startRes.success) {
-                            showError('CLIProxyAPI process start failed');
+                            showError(window.t('login.process_start_failed'));
                             return;
                         }
                         // Save the generated password for local mode HTTP requests
@@ -172,21 +178,21 @@ updateConfirmBtn.addEventListener('click', async () => {
                             });
                         }
                     } catch (e) {
-                        showError('CLIProxyAPI process start error');
+                        showError(window.t('login.process_start_error'));
                         return;
                     }
                     setTimeout(async () => { await openSettingsWindowPreferNew(); }, 800);
                 }
             } else {
-                showError('Failed to update CLIProxyAPI: ' + result.error);
+                showError(window.t('settings.operation_failed', { error: result.error }));
             }
         }
     } catch (error) {
         console.error('Error updating CLIProxyAPI:', error);
-        showError('Error updating CLIProxyAPI: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     } finally {
         continueBtn.disabled = false;
-        continueBtn.textContent = 'Connect';
+        continueBtn.textContent = window.t('login.connectBtn');
     }
 });
 
@@ -197,7 +203,7 @@ passwordCancelBtn.addEventListener('click', () => {
     passwordInput1.value = '';
     passwordInput2.value = '';
     // User cancelled, return to login page, do not start CLIProxyAPI
-    showError('Password must be set to use Local mode');
+    showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
 });
 
 passwordSaveBtn.addEventListener('click', async () => {
@@ -206,29 +212,29 @@ passwordSaveBtn.addEventListener('click', async () => {
 
     // Validate password
     if (!password1) {
-        showError('Please enter password');
+        showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
         return;
     }
 
     if (!password2) {
-        showError('Please confirm password');
+        showError(window.t('login.confirmPwdLabel') + ' ' + window.t('settings.invalid'));
         return;
     }
 
     if (password1 !== password2) {
-        showError('Passwords do not match');
+        showError(window.t('login.pwd_not_match'));
         return;
     }
 
     if (password1.length < 6) {
-        showError('Password must be at least 6 characters');
+        showError(window.t('login.pwd_too_short'));
         return;
     }
 
     try {
         // Disable save button
         passwordSaveBtn.disabled = true;
-        passwordSaveBtn.textContent = 'Saving...';
+        passwordSaveBtn.textContent = window.t('login.saving');
 
         if (window.__TAURI__?.core?.invoke) {
             const result = await window.__TAURI__.core.invoke('update_secret_key', {
@@ -236,7 +242,7 @@ passwordSaveBtn.addEventListener('click', async () => {
             });
 
             if (result.success) {
-                showSuccess('Password set successfully!');
+                showSuccess(window.t('settings.success'));
                 passwordDialog.classList.remove('show');
                 // Clear input fields
                 passwordInput1.value = '';
@@ -247,9 +253,12 @@ passwordSaveBtn.addEventListener('click', async () => {
 
                 // Start process then go to settings
                 try {
-                    const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi');
+                    const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi', {
+                        trayOpenSettings: window.t('tray.settings'),
+                        trayQuit: window.t('tray.quit')
+                    });
                     if (!startRes || !startRes.success) {
-                        showError('CLIProxyAPI process start failed');
+                        showError(window.t('settings.failed'));
                         return;
                     }
                     // Save the generated password for local mode HTTP requests
@@ -258,12 +267,12 @@ passwordSaveBtn.addEventListener('click', async () => {
                         console.log('Saved local management key:', startRes.password);
                     }
                 } catch (e) {
-                    showError('CLIProxyAPI process start error');
+                    showError(window.t('settings.failed'));
                     return;
                 }
                 setTimeout(async () => { await openSettingsWindowPreferNew(); }, 600);
             } else {
-                showError('Failed to set password: ' + result.error);
+                showError(window.t('settings.operation_failed', { error: result.error }));
             }
         }
     } catch (error) {
@@ -277,11 +286,11 @@ passwordSaveBtn.addEventListener('click', async () => {
         } else if (error && error.toString) {
             errorMessage = error.toString();
         }
-        showError('Error setting password: ' + errorMessage);
+        showError(window.t('settings.operation_failed', { error: errorMessage }));
     } finally {
         // Restore save button
         passwordSaveBtn.disabled = false;
-        passwordSaveBtn.textContent = 'Save';
+        passwordSaveBtn.textContent = window.t('login.saveBtn');
     }
 });
 
@@ -333,7 +342,7 @@ function initializeFromLocalStorage() {
 }
 
 async function handleConnectClick() {
-    try { showSuccess('Connecting...'); } catch (_) { }
+    try { showSuccess(window.t('login.connecting')); } catch (_) { }
     const localSelected = localCard.classList.contains('selected');
 
     if (localSelected) {
@@ -353,7 +362,7 @@ async function handleConnectClick() {
         try {
             // Disable button during check
             continueBtn.disabled = true;
-            continueBtn.textContent = 'Checking...';
+            continueBtn.textContent = window.t('login.checking');
 
             // Save proxy URL to localStorage
             if (proxyUrl) {
@@ -371,7 +380,7 @@ async function handleConnectClick() {
                     if (result.needsUpdate) {
                         // Update needed, show update dialog
                         updateDialogMessage.textContent =
-                            `Current version: ${result.version}\nLatest version: ${result.latestVersion}\n\nDo you want to update to the latest version?`;
+                            `${window.t('login.newVersionMsg')}\nVersion: ${result.latestVersion}`;
                         updateDialog.classList.add('show');
 
                         // Save current path information
@@ -399,9 +408,12 @@ async function handleConnectClick() {
                         } else {
                             // Password is set: start process then open settings page
                             try {
-                                const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi');
+                                const startRes = await window.__TAURI__.core.invoke('start_cliproxyapi', {
+                                    trayOpenSettings: window.t('tray.settings'),
+                                    trayQuit: window.t('tray.quit')
+                                });
                                 if (!startRes || !startRes.success) {
-                                    showError('CLIProxyAPI process start failed');
+                                    showError(window.t('login.process_start_failed'));
                                     return;
                                 }
                                 // Save the generated password for local mode HTTP requests
@@ -410,26 +422,26 @@ async function handleConnectClick() {
                                     console.log('Saved local management key:', startRes.password);
                                 }
                             } catch (e) {
-                                showError('CLIProxyAPI process start error');
+                                showError(window.t('login.process_start_error'));
                                 return;
                             }
                             await openSettingsWindowPreferNew();
                         }
                     }
                 } else {
-                    showError('Failed to check version: ' + result.error);
+                    showError(window.t('login.failed_check_version', { error: result.error }));
                 }
             } else {
                 // Fallback for non-Tauri environment
-                showError('This feature requires Tauri environment');
+                showError(window.t('login.tauri_required'));
             }
         } catch (error) {
             console.error('Error checking version:', error);
-            showError('Error checking version: ' + error.message);
+            showError(window.t('login.error_checking_version', { error: error.message }));
         } finally {
             // Re-enable button
             continueBtn.disabled = false;
-            continueBtn.textContent = 'Connect';
+            continueBtn.textContent = window.t('login.connectBtn');
         }
         return;
     }
@@ -439,19 +451,19 @@ async function handleConnectClick() {
     const password = passwordInput.value.trim();
 
     if (!remoteUrl) {
-        showError('Please enter a remote URL');
+        showError(window.t('login.remoteUrlLabel') + ' ' + window.t('settings.invalid'));
         return;
     }
 
     if (!password) {
-        showError('Please enter a password');
+        showError(window.t('login.passwordLabel') + ' ' + window.t('settings.invalid'));
         return;
     }
 
     try {
         // Disable button during request
         continueBtn.disabled = true;
-        continueBtn.textContent = 'Connecting...';
+        continueBtn.textContent = window.t('login.connecting');
 
         // Save connection info to localStorage first
         localStorage.setItem('type', "remote");
@@ -477,9 +489,9 @@ async function handleConnectClick() {
             console.log('Connection successful, config loaded');
         } catch (error) {
             if (error.message.includes('401')) {
-                showError('Password incorrect');
+                showError(window.t('login.pwd_incorrect'));
             } else {
-                showError('Server address error');
+                showError(window.t('login.server_address_error'));
             }
             return;
         }
@@ -491,11 +503,11 @@ async function handleConnectClick() {
 
     } catch (error) {
         console.error('Connection error:', error);
-        showError('Server address error');
+        showError(window.t('login.server_address_error'));
     } finally {
         // Re-enable button
         continueBtn.disabled = false;
-        continueBtn.textContent = 'Connect';
+        continueBtn.textContent = window.t('login.connectBtn');
     }
 }
 
@@ -577,23 +589,23 @@ function handleDownloadStatus(statusData) {
     switch (statusData.status) {
         case 'checking':
             progressContainer.classList.add('show');
-            progressLabel.textContent = 'Checking version...';
+            progressLabel.textContent = window.t('login.checking_version');
             progressFill.style.width = '0%';
             progressText.textContent = '0%';
             break;
 
         case 'starting':
             progressContainer.classList.add('show');
-            progressLabel.textContent = 'Downloading CLIProxyAPI...';
+            progressLabel.textContent = window.t('login.download_starting');
             progressFill.style.width = '0%';
             progressText.textContent = '0%';
             break;
 
         case 'completed':
-            progressLabel.textContent = 'Download completed!';
+            progressLabel.textContent = window.t('login.download_completed');
             progressFill.style.width = '100%';
             progressText.textContent = '100%';
-            showSuccess(`CLIProxyAPI ${statusData.version} downloaded and extracted successfully!`);
+            showSuccess(window.t('login.download_success').replace('{version}', statusData.version));
 
             // Hide progress bar
             setTimeout(() => {
@@ -603,7 +615,7 @@ function handleDownloadStatus(statusData) {
 
         case 'latest':
             progressContainer.classList.remove('show');
-            showSuccess(`CLIProxyAPI ${statusData.version} is already the latest version!`);
+            showSuccess(window.t('login.already_latest').replace('{version}', statusData.version));
             break;
 
         case 'update-available':
@@ -613,7 +625,7 @@ function handleDownloadStatus(statusData) {
 
         case 'failed':
             progressContainer.classList.remove('show');
-            showError('Operation failed: ' + statusData.error);
+            showError(window.t('login.operation_failed', { error: statusData.error }));
             break;
     }
 }

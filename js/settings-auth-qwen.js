@@ -14,7 +14,7 @@ async function startQwenAuthFlow() {
         showQwenAuthDialog();
     } catch (error) {
         console.error('Error starting Qwen auth flow:', error);
-        showError('Failed to start Qwen Code authentication flow: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     }
 }
 
@@ -61,23 +61,23 @@ function showQwenAuthDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Qwen Code Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.qwen_auth_title')}</h3>
                 <button class="modal-close" id="qwen-auth-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please copy the link below and open it in your browser to complete Qwen Code Authentication:</p>
+                    <p>${window.t('settings.auth.qwen_auth_desc')}</p>
                     <div class="auth-url-container">
                         <input type="text" id="qwen-auth-url-input" class="form-input" value="${qwenAuthUrl}" readonly>
-                        <button type="button" id="qwen-copy-btn" class="copy-btn">Copy Link</button>
+                        <button type="button" id="qwen-copy-btn" class="copy-btn">${window.t('settings.auth.copy_link')}</button>
                     </div>
                     <div class="auth-status" id="qwen-auth-status" style="display: none;">
-                        <div class="auth-status-text">Waiting for authentication to complete...</div>
+                        <div class="auth-status-text">${window.t('settings.auth.waiting')}</div>
                         <div class="auth-status-spinner"></div>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="qwen-open-btn" class="btn-primary">Open Link</button>
-                        <button type="button" id="qwen-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="qwen-open-btn" class="btn-primary">${window.t('settings.auth.open_link')}</button>
+                        <button type="button" id="qwen-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -97,22 +97,22 @@ function showQwenAuthDialog() {
 }
 
 async function copyQwenUrl() {
-    try { await navigator.clipboard.writeText(qwenAuthUrl); showSuccessMessage('Link copied to clipboard'); }
-    catch (error) { console.error('Error copying Qwen URL:', error); showError('Failed to copy link: ' + error.message); }
+    try { await navigator.clipboard.writeText(qwenAuthUrl); showSuccessMessage(window.t('settings.auth.link_copied')); }
+    catch (error) { console.error('Error copying Qwen URL:', error); showError(window.t('settings.operation_failed', { error: error.message })); }
 }
 
 function openQwenUrl() {
     try {
         if (window.__TAURI__?.shell?.open) { window.__TAURI__.shell.open(qwenAuthUrl); }
         else { window.open(qwenAuthUrl, '_blank'); }
-        showSuccessMessage('Authentication link opened in browser');
+        showSuccessMessage(window.t('settings.auth.link_opened'));
 
         // Show polling status
         const statusDiv = document.getElementById('qwen-auth-status');
         if (statusDiv) {
             statusDiv.style.display = 'block';
         }
-    } catch (error) { console.error('Error opening Qwen URL:', error); showError('Failed to open link: ' + error.message); }
+    } catch (error) { console.error('Error opening Qwen URL:', error); showError(window.t('settings.operation_failed', { error: error.message })); }
 }
 
 // Start Qwen authentication status polling
@@ -131,7 +131,7 @@ async function startQwenAuthPolling() {
             () => {
                 // Authentication successful
                 console.log('Qwen Code Authentication successful');
-                showSuccessMessage('Qwen Code Authentication completed!');
+                showSuccessMessage(window.t('settings.success'));
                 cancelQwenAuth();
                 // Refresh auth files list
                 if (typeof loadAuthFiles === 'function') {
@@ -141,13 +141,13 @@ async function startQwenAuthPolling() {
             (error) => {
                 // Authentication failed
                 console.error('Qwen Code Authentication failed:', error);
-                showError('Qwen Code Authentication failed: ' + error);
+                showError(window.t('settings.operation_failed', { error: error }));
                 cancelQwenAuth();
             }
         );
     } catch (error) {
         console.error('Qwen Code Authentication polling error:', error);
-        showError('Error occurred during Qwen Code Authentication: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
         cancelQwenAuth();
     }
 }
@@ -284,7 +284,7 @@ async function pollQwenAuthStatus(authType, state, onSuccess, onError) {
                 qwenAbortController.abort();
                 qwenAbortController = null;
             }
-            onError('Authentication timeout, please try again');
+            onError(window.t('settings.auth.timeout'));
             reject(new Error('Authentication timeout'));
         }, 300000);
     });

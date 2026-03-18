@@ -8,9 +8,10 @@
         content="default-src 'self'; script-src 'self' 'unsafe-inline' tauri:; style-src 'self' 'unsafe-inline'; connect-src 'self' http: https: tauri: ipc:" />
     <meta http-equiv="X-Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' tauri:; style-src 'self' 'unsafe-inline'; connect-src 'self' http: https: tauri: ipc:" />
-    <title>EasyCLI</title>
+    <title data-i18n="brand">EasyCLI</title>
     <link rel="stylesheet" href="css/login.css">
 
+    <script src="js/i18n.js"></script>
     <script src="js/config-manager.js"></script>
     <script>
         // Dev convenience: reload on Cmd/Ctrl+R
@@ -44,40 +45,40 @@
     <div class="cards-container">
         <div class="card selected" id="local-card">
             <div class="card-icon">💻</div>
-            <h2 class="card-title">Local</h2>
-            <p class="card-description">Run CLIProxyAPI server on your local machine.</p>
+            <h2 class="card-title" data-i18n="login.localTitle">Local</h2>
+            <p class="card-description" data-i18n="login.localDesc">Run CLIProxyAPI server on your local machine.</p>
         </div>
 
         <div class="card" id="remote-card">
             <div class="card-icon">🌐</div>
-            <h2 class="card-title">Remote</h2>
-            <p class="card-description">Remote controller for a remote CLIProxyAPI server.</p>
+            <h2 class="card-title" data-i18n="login.remoteTitle">Remote</h2>
+            <p class="card-description" data-i18n="login.remoteDesc">Remote controller for a remote CLIProxyAPI server.</p>
         </div>
     </div>
 
     <div class="remote-url-section" id="remote-url-section">
-        <div class="remote-url-label">Remote URL:</div>
+        <div class="remote-url-label" data-i18n="login.remoteUrlLabel">Remote URL:</div>
         <input type="text" class="remote-url-input" id="remote-url-input" value="http://www.example.com:8317" />
-        <div class="password-label">Password:</div>
-        <input type="password" class="password-input" id="password-input" placeholder="Enter password" />
+        <div class="password-label" data-i18n="login.passwordLabel">Password:</div>
+        <input type="password" class="password-input" id="password-input" placeholder="Enter password" data-i18n-placeholder="login.passwordPlaceholder" />
     </div>
 
     <div class="proxy-section" id="proxy-section">
-        <div class="proxy-label">Proxy Server (Optional):</div>
+        <div class="proxy-label" data-i18n="login.proxyLabel">Proxy Server (Optional):</div>
         <input type="text" class="proxy-input" id="proxy-input"
-            placeholder="http://host:port or https://host:port or socks5://user:pass@host:port" />
-        <div class="proxy-help">Support HTTP, HTTPS, and SOCKS5 proxy servers</div>
+            data-i18n-placeholder="login.proxyHelp" placeholder="http://host:port or https://host:port or socks5://user:pass@host:port" />
+        <div class="proxy-help" data-i18n="login.proxyHelp">Support HTTP, HTTPS, and SOCKS5 proxy servers</div>
         
         <div class="update-check-container" style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
             <input type="checkbox" id="check-updates-checkbox" checked style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
-            <label for="check-updates-checkbox" style="color: var(--text-color); font-size: 14px; cursor: pointer; user-select: none;">Check for updates on connect</label>
+            <label for="check-updates-checkbox" style="color: var(--text-color); font-size: 14px; cursor: pointer; user-select: none;" data-i18n="login.checkUpdates">Check for updates on connect</label>
         </div>
     </div>
 
-    <button class="continue-btn" id="continue-btn" onclick="window.__onConnect && window.__onConnect()">Connect</button>
+    <button class="continue-btn" id="continue-btn" onclick="window.__onConnect && window.__onConnect()" data-i18n="login.connectBtn">Connect</button>
 
     <div class="progress-container" id="progress-container">
-        <div class="progress-label" id="progress-label">Downloading CLIProxyAPI...</div>
+        <div class="progress-label" id="progress-label" data-i18n="login.downloading">Downloading CLIProxyAPI...</div>
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
         </div>
@@ -89,36 +90,36 @@
 
     <div class="update-dialog" id="update-dialog">
         <div class="update-dialog-content">
-            <div class="update-dialog-title">New Version Found</div>
-            <div class="update-dialog-message" id="update-dialog-message">
+            <div class="update-dialog-title" data-i18n="login.newVersionTitle">New Version Found</div>
+            <div class="update-dialog-message" id="update-dialog-message" data-i18n="login.newVersionMsg">
                 A new version is available. Do you want to update to the latest version?
             </div>
             <div class="update-dialog-buttons">
-                <button class="update-dialog-btn cancel" id="update-cancel-btn">Update Later</button>
-                <button class="update-dialog-btn update" id="update-confirm-btn">Update Now</button>
+                <button class="update-dialog-btn cancel" id="update-cancel-btn" data-i18n="login.updateLaterBtn">Update Later</button>
+                <button class="update-dialog-btn update" id="update-confirm-btn" data-i18n="login.updateNowBtn">Update Now</button>
             </div>
         </div>
     </div>
 
     <div class="password-dialog" id="password-dialog">
         <div class="password-dialog-content">
-            <div class="password-dialog-title">Set Remote Management Password</div>
-            <div class="password-dialog-message">
+            <div class="password-dialog-title" data-i18n="login.setPasswordTitle">Set Remote Management Password</div>
+            <div class="password-dialog-message" data-i18n="login.setPasswordMsg">
                 For security reasons, please set a password for the remote management feature.
             </div>
             <div class="password-input-group">
-                <label class="password-input-label" for="password-input-1">Password:</label>
+                <label class="password-input-label" for="password-input-1" data-i18n="login.passwordLabel">Password:</label>
                 <input type="password" class="password-input-field" id="password-input-1"
-                    placeholder="Please enter password">
+                    placeholder="Please enter password" data-i18n-placeholder="login.passwordPlaceholder">
             </div>
             <div class="password-input-group">
-                <label class="password-input-label" for="password-input-2">Confirm Password:</label>
+                <label class="password-input-label" for="password-input-2" data-i18n="login.confirmPwdLabel">Confirm Password:</label>
                 <input type="password" class="password-input-field" id="password-input-2"
-                    placeholder="Please enter password again">
+                    placeholder="Please enter password again" data-i18n-placeholder="login.confirmPwdPlaceholder">
             </div>
             <div class="password-dialog-buttons">
-                <button class="password-dialog-btn cancel" id="password-cancel-btn">Cancel</button>
-                <button class="password-dialog-btn save" id="password-save-btn">Save</button>
+                <button class="password-dialog-btn cancel" id="password-cancel-btn" data-i18n="login.cancelBtn">Cancel</button>
+                <button class="password-dialog-btn save" id="password-save-btn" data-i18n="login.saveBtn">Save</button>
             </div>
         </div>
     </div>

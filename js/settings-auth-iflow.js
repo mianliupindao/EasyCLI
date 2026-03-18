@@ -11,20 +11,20 @@ function showIFlowCookieDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">iFlow Cookie Import</h3>
+                <h3 class="modal-title">${window.t('settings.auth.iflow_cookie_title')}</h3>
                 <button class="modal-close" id="iflow-cookie-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Paste your iFlow cookie to save it as an authentication file.</p>
+                    <p>${window.t('settings.auth.iflow_cookie_desc')}</p>
                     <div class="form-group">
-                        <label for="iflow-cookie-input">Cookie <span class="required">*</span></label>
-                        <textarea id="iflow-cookie-input" class="form-input" rows="4" placeholder="Paste iFlow cookie here"></textarea>
-                        <small class="form-help">Cookie is required and must not be empty.</small>
+                        <label for="iflow-cookie-input">${window.t('settings.auth.iflow_cookie_label')} <span class="required">*</span></label>
+                        <textarea id="iflow-cookie-input" class="form-input" rows="4" placeholder="${window.t('settings.auth.iflow_cookie_placeholder')}"></textarea>
+                        <small class="form-help">${window.t('settings.auth.iflow_cookie_help')}</small>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="iflow-cookie-save-btn" class="btn-primary">Save</button>
-                        <button type="button" id="iflow-cookie-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="iflow-cookie-save-btn" class="btn-primary">${window.t('settings.auth.save')}</button>
+                        <button type="button" id="iflow-cookie-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -45,30 +45,30 @@ async function handleIFlowCookieSubmit(inputEl, saveBtn) {
     try {
         const cookie = inputEl && inputEl.value ? inputEl.value.trim() : '';
         if (!cookie) {
-            showError('Please enter iFlow cookie');
+            showError(window.t('settings.operation_failed', { error: window.t('settings.auth.iflow_cookie_label') }));
             return;
         }
         saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving...';
+        saveBtn.textContent = window.t('settings.saving');
 
         const result = await configManager.saveIFlowCookie(cookie);
         if (result && result.success) {
             const emailLabel = result.data?.email ? result.data.email : '';
-            showSuccessMessage(`iFlow cookie saved${emailLabel ? ` for ${emailLabel}` : ''}`);
+            showSuccessMessage(window.t('settings.auth.iflow_cookie_success') + `${emailLabel ? ` for ${emailLabel}` : ''}`);
             closeIFlowCookieDialog();
             if (typeof loadAuthFiles === 'function') {
                 await loadAuthFiles();
             }
         } else {
-            showError(result?.error || 'Failed to save iFlow cookie');
+            showError(result?.error ? window.t('settings.operation_failed', { error: result.error }) : window.t('settings.failed'));
         }
     } catch (error) {
         console.error('Error saving iFlow cookie:', error);
-        showError('Failed to save iFlow cookie: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     } finally {
         if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.textContent = 'Save';
+            saveBtn.textContent = window.t('settings.auth.save');
         }
     }
 }
@@ -108,7 +108,7 @@ async function startIFlowAuthFlow() {
     } catch (error) {
         console.error('Error starting iFlow auth flow:', error);
         const msg = (error && (error.message || String(error))) || 'Unknown error';
-        showError('Failed to start iFlow authentication flow: ' + msg);
+        showError(window.t('settings.operation_failed', { error: msg }));
         if (iflowLocalServer) {
             await stopIFlowLocalServer();
         }
@@ -162,7 +162,7 @@ async function handleIFlowCallback(req, res) {
         console.log('Redirecting to:', redirectUrl);
         res.writeHead(302, { 'Location': redirectUrl });
         res.end();
-        setTimeout(async () => { await stopIFlowLocalServer(); showSuccessMessage('iFlow authentication completed!'); }, 1000);
+        setTimeout(async () => { await stopIFlowLocalServer(); showSuccessMessage(window.t('settings.success')); }, 1000);
     } catch (error) {
         console.error('Error handling iFlow callback:', error);
         res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -213,23 +213,23 @@ function showIFlowAuthDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">iFlow Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.iflow_auth_title')}</h3>
                 <button class="modal-close" id="iflow-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="iflow-auth-content">
-                    <p>Please copy the link below and open it in your browser, or click the "Open Link" button directly:</p>
+                    <p>${window.t('settings.auth.desc_generic')}</p>
                     <div class="auth-url-container">
                         <input type="text" id="iflow-auth-url-input" class="form-input" value="${iflowAuthUrl}" readonly>
-                        <button type="button" id="iflow-copy-btn" class="copy-btn">Copy Link</button>
+                        <button type="button" id="iflow-copy-btn" class="copy-btn">${window.t('settings.auth.copy_link')}</button>
                     </div>
                     <div class="auth-status" id="iflow-auth-status" style="display: none;">
-                        <div class="auth-status-text">Waiting for authentication to complete...</div>
+                        <div class="auth-status-text">${window.t('settings.auth.waiting')}</div>
                         <div class="auth-status-spinner"></div>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="iflow-open-btn" class="btn-primary">Open Link</button>
-                        <button type="button" id="iflow-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="iflow-open-btn" class="btn-primary">${window.t('settings.auth.open_link')}</button>
+                        <button type="button" id="iflow-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -249,22 +249,22 @@ function showIFlowAuthDialog() {
 }
 
 async function copyIFlowUrl() {
-    try { await navigator.clipboard.writeText(iflowAuthUrl); showSuccessMessage('Link copied to clipboard'); }
-    catch (error) { console.error('Error copying iFlow URL:', error); showError('Failed to copy link: ' + error.message); }
+    try { await navigator.clipboard.writeText(iflowAuthUrl); showSuccessMessage(window.t('settings.auth.link_copied')); }
+    catch (error) { console.error('Error copying iFlow URL:', error); showError(window.t('settings.operation_failed', { error: error.message })); }
 }
 
 function openIFlowUrl() {
     try {
         if (window.__TAURI__?.shell?.open) { window.__TAURI__.shell.open(iflowAuthUrl); }
         else { window.open(iflowAuthUrl, '_blank'); }
-        showSuccessMessage('Authentication link opened in browser');
+        showSuccessMessage(window.t('settings.auth.link_opened'));
 
         // Show polling status
         const statusDiv = document.getElementById('iflow-auth-status');
         if (statusDiv) {
             statusDiv.style.display = 'block';
         }
-    } catch (error) { console.error('Error opening iFlow URL:', error); showError('Failed to open link: ' + error.message); }
+    } catch (error) { console.error('Error opening iFlow URL:', error); showError(window.t('settings.operation_failed', { error: error.message })); }
 }
 
 // Start iFlow authentication status polling
@@ -281,7 +281,7 @@ async function startIFlowAuthPolling() {
             () => {
                 // Authentication successful
                 console.log('iFlow Authentication successful');
-                showSuccessMessage('iFlow authentication completed!');
+                showSuccessMessage(window.t('settings.success'));
                 cancelIFlowAuth();
                 // Refresh auth files list
                 if (typeof loadAuthFiles === 'function') {
@@ -291,13 +291,13 @@ async function startIFlowAuthPolling() {
             (error) => {
                 // Authentication failed
                 console.error('iFlow Authentication failed:', error);
-                showError('iFlow Authentication failed: ' + error);
+                showError(window.t('settings.operation_failed', { error: error }));
                 cancelIFlowAuth();
             }
         );
     } catch (error) {
         console.error('iFlow Authentication polling error:', error);
-        showError('Error occurred during iFlow Authentication: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
         cancelIFlowAuth();
     }
 }
@@ -426,7 +426,7 @@ async function pollIFlowAuthStatus(authType, state, onSuccess, onError) {
                 iflowAbortController.abort();
                 iflowAbortController = null;
             }
-            onError('Authentication timeout, please try again');
+            onError(window.t('settings.auth.timeout'));
             reject(new Error('Authentication timeout'));
         }, 300000);
     });

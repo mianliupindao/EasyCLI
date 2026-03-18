@@ -20,7 +20,7 @@ async function startClaudeAuthFlow() {
     } catch (error) {
         console.error('Error starting Claude auth flow:', error);
         const msg = (error && (error.message || String(error))) || 'Unknown error';
-        showError('Failed to start Claude Code authentication flow: ' + msg);
+        showError(window.t('settings.operation_failed', { error: msg }));
         if (claudeLocalServer) {
             await stopClaudeLocalServer();
         }
@@ -74,7 +74,7 @@ async function handleClaudeCallback(req, res) {
         console.log('Redirecting to:', redirectUrl);
         res.writeHead(302, { 'Location': redirectUrl });
         res.end();
-        setTimeout(async () => { await stopClaudeLocalServer(); showSuccessMessage('Claude Code authentication completed!'); }, 1000);
+        setTimeout(async () => { await stopClaudeLocalServer(); showSuccessMessage(window.t('settings.auth.claude_success')); }, 1000);
     } catch (error) {
         console.error('Error handling Claude callback:', error);
         res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -125,23 +125,23 @@ function showClaudeAuthDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Claude Code Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.claude_title')}</h3>
                 <button class="modal-close" id="claude-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please copy the link below and open it in your browser, or click the "Open Link" button directly:</p>
+                    <p>${window.t('settings.auth.claude_desc')}</p>
                     <div class="auth-url-container">
                         <input type="text" id="claude-auth-url-input" class="form-input" value="${claudeAuthUrl}" readonly>
-                        <button type="button" id="copy-claude-url-btn" class="copy-btn">Copy Link</button>
+                        <button type="button" id="copy-claude-url-btn" class="copy-btn">${window.t('settings.auth.copy_link')}</button>
                     </div>
                     <div class="auth-status" id="claude-auth-status" style="display: none;">
-                        <div class="auth-status-text">Waiting for authentication to complete...</div>
+                        <div class="auth-status-text">${window.t('settings.auth.waiting')}</div>
                         <div class="auth-status-spinner"></div>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="open-claude-url-btn" class="btn-primary">Open Link</button>
-                        <button type="button" id="cancel-claude-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="open-claude-url-btn" class="btn-primary">${window.t('settings.auth.open_link')}</button>
+                        <button type="button" id="cancel-claude-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -159,22 +159,22 @@ function showClaudeAuthDialog() {
 }
 
 async function copyClaudeUrl() {
-    try { const urlInput = document.getElementById('claude-auth-url-input'); await navigator.clipboard.writeText(urlInput.value); showSuccessMessage('Link copied to clipboard'); }
-    catch (error) { console.error('Error copying URL:', error); showError('Failed to copy link'); }
+    try { const urlInput = document.getElementById('claude-auth-url-input'); await navigator.clipboard.writeText(urlInput.value); showSuccessMessage(window.t('settings.auth.link_copied')); }
+    catch (error) { console.error('Error copying URL:', error); showError(window.t('settings.failed')); }
 }
 
 function openClaudeUrl() {
     try {
         if (window.__TAURI__?.shell?.open) { window.__TAURI__.shell.open(claudeAuthUrl); }
         else { window.open(claudeAuthUrl, '_blank'); }
-        showSuccessMessage('Authentication link opened in browser');
+        showSuccessMessage(window.t('settings.auth.link_opened'));
 
         // Show polling status
         const statusDiv = document.getElementById('claude-auth-status');
         if (statusDiv) {
             statusDiv.style.display = 'block';
         }
-    } catch (error) { console.error('Error opening URL:', error); showError('Failed to open link'); }
+    } catch (error) { console.error('Error opening URL:', error); showError(window.t('settings.failed')); }
 }
 
 // Start Claude authentication status polling
@@ -193,7 +193,7 @@ async function startClaudeAuthPolling() {
             () => {
                 // Authentication successful
                 console.log('Claude Code Authentication successful');
-                showSuccessMessage('Claude Code authentication completed!');
+                showSuccessMessage(window.t('settings.auth.claude_success'));
                 cancelClaudeAuth();
                 // Refresh auth files list
                 if (typeof loadAuthFiles === 'function') {
@@ -203,13 +203,13 @@ async function startClaudeAuthPolling() {
             (error) => {
                 // Authentication failed
                 console.error('Claude Code Authentication failed:', error);
-                showError('Claude Code Authentication failed: ' + error);
+                showError(window.t('settings.operation_failed', { error: error }));
                 cancelClaudeAuth();
             }
         );
     } catch (error) {
         console.error('Claude Code Authentication polling error:', error);
-        showError('Error occurred during Claude Code Authentication: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
         cancelClaudeAuth();
     }
 }
@@ -352,7 +352,7 @@ async function pollClaudeAuthStatus(authType, state, onSuccess, onError) {
                 claudeAbortController.abort();
                 claudeAbortController = null;
             }
-            onError('Authentication timeout, please try again');
+            onError(window.t('settings.auth.timeout'));
             reject(new Error('Authentication timeout'));
         }, 300000);
     });

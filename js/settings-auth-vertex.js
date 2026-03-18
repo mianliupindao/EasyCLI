@@ -7,25 +7,25 @@ function showVertexImportDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Vertex Credential Import</h3>
+                <h3 class="modal-title">${window.t('settings.auth.vertex_title')}</h3>
                 <button class="modal-close" id="vertex-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Upload a Google service account JSON and optional Vertex location.</p>
+                    <p>${window.t('settings.auth.vertex_desc')}</p>
                     <div class="form-group">
-                        <label for="vertex-file-input">Service Account JSON <span class="required">*</span></label>
+                        <label for="vertex-file-input">${window.t('settings.auth.vertex_json_label')} <span class="required">*</span></label>
                         <input type="file" id="vertex-file-input" class="form-input" accept=".json">
-                        <small class="form-help">The file name must end with .json.</small>
+                        <small class="form-help">${window.t('settings.auth.vertex_json_help')}</small>
                     </div>
                     <div class="form-group">
-                        <label for="vertex-location-input">Location</label>
+                        <label for="vertex-location-input">${window.t('settings.auth.vertex_location_label')}</label>
                         <input type="text" id="vertex-location-input" class="form-input" placeholder="us-central1" value="us-central1">
-                        <small class="form-help">Defaults to us-central1 when empty.</small>
+                        <small class="form-help">${window.t('settings.auth.vertex_location_help')}</small>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="vertex-import-btn" class="btn-primary">Import</button>
-                        <button type="button" id="vertex-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="vertex-import-btn" class="btn-primary">${window.t('settings.auth.import')}</button>
+                        <button type="button" id="vertex-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -56,13 +56,13 @@ async function handleVertexImport(fileInput, locationInput, importBtn) {
     try {
         const files = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
         if (files.length === 0) {
-            showError('Please select a service account JSON file');
+            showError(window.t('settings.operation_failed', { error: window.t('settings.auth.vertex_json_label') }));
             return;
         }
 
         const file = files[0];
         if (!file.name.toLowerCase().endsWith('.json')) {
-            showError('Service account file must be a .json file');
+            showError(window.t('settings.operation_failed', { error: window.t('settings.auth.vertex_json_help') }));
             return;
         }
 
@@ -70,28 +70,28 @@ async function handleVertexImport(fileInput, locationInput, importBtn) {
         const resolvedLocation = location || 'us-central1';
 
         importBtn.disabled = true;
-        importBtn.textContent = 'Importing...';
+        importBtn.textContent = window.t('settings.auth.importing');
 
         const result = await configManager.importVertexCredential(file, resolvedLocation);
 
         if (result && result.success) {
             const project = result.data?.project_id ? ` for ${result.data.project_id}` : '';
             const locText = result.data?.location ? ` (${result.data.location})` : '';
-            showSuccessMessage(`Vertex credential imported${project}${locText}`);
+            showSuccessMessage(window.t('settings.auth.vertex_success') + `${project}${locText}`);
             closeVertexImportDialog();
             if (typeof loadAuthFiles === 'function') {
                 await loadAuthFiles();
             }
         } else {
-            showError(result?.error || 'Failed to import Vertex credential');
+            showError(result?.error ? window.t('settings.operation_failed', { error: result.error }) : window.t('settings.failed'));
         }
     } catch (error) {
         console.error('Error importing Vertex credential:', error);
-        showError('Failed to import Vertex credential: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     } finally {
         if (importBtn) {
             importBtn.disabled = false;
-            importBtn.textContent = 'Import';
+            importBtn.textContent = window.t('settings.auth.import');
         }
     }
 }

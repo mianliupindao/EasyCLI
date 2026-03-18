@@ -94,16 +94,16 @@ function updateServerStatus() {
     const connectionType = localStorage.getItem('type') || 'local';
 
     if (connectionType === 'local') {
-        serverStatusText.innerHTML = '<span style="color: #10b981;">●</span> Local';
+        serverStatusText.innerHTML = `<span style="color: #10b981;">●</span> ${window.t('settings.status_local')}`;
     } else {
         configManager.refreshConnection();
         const storedBaseUrl = localStorage.getItem('base-url');
         const baseUrl = storedBaseUrl || configManager.baseUrl;
 
         if (baseUrl) {
-            serverStatusText.innerHTML = `Remote:<br><span style="color: #10b981;">●</span> ${baseUrl}`;
+            serverStatusText.innerHTML = `${window.t('settings.status_remote')}:<br><span style="color: #10b981;">●</span> ${baseUrl}`;
         } else {
-            serverStatusText.innerHTML = 'Remote:<br><span style="color: #10b981;">●</span> Unknown';
+            serverStatusText.innerHTML = `${window.t('settings.status_remote')}:<br><span style="color: #10b981;">●</span> ${window.t('settings.status_unknown')}`;
         }
     }
 }
@@ -158,24 +158,24 @@ autoStartSwitch.addEventListener('change', async () => {
             if (autoStartSwitch.checked) {
                 const result = await window.__TAURI__.core.invoke('enable_auto_start');
                 if (result.success) {
-                    showSuccessMessage('Auto-start enabled successfully');
+                    showSuccessMessage(window.t('settings.success'));
                 } else {
-                    showError('Failed to enable auto-start');
+                    showError(window.t('settings.failed'));
                     autoStartSwitch.checked = false;
                 }
             } else {
                 const result = await window.__TAURI__.core.invoke('disable_auto_start');
                 if (result.success) {
-                    showSuccessMessage('Auto-start disabled successfully');
+                    showSuccessMessage(window.t('settings.success'));
                 } else {
-                    showError('Failed to disable auto-start');
+                    showError(window.t('settings.failed'));
                     autoStartSwitch.checked = true;
                 }
             }
         }
     } catch (error) {
         console.error('Error toggling auto-start:', error);
-        showError('Failed to update auto-start setting');
+        showError(window.t('settings.failed'));
         // Revert the toggle
         autoStartSwitch.checked = !autoStartSwitch.checked;
     }
@@ -205,7 +205,7 @@ async function updateSetting(endpoint, value, isDelete = false) {
 // Apply settings for the current tab
 async function applyAllSettings() {
     applyBtn.disabled = true;
-    applyBtn.textContent = 'Applying...';
+    applyBtn.textContent = window.t('settings.saving');
 
     try {
         const serverConfig = await getCurrentConfig();
@@ -307,9 +307,7 @@ async function applyAllSettings() {
         }
 
         if (changes.length === 0) {
-            const tabName = currentTab === 'basic' ? 'Basic Settings' :
-                currentTab === 'api' ? 'Third Party API Keys' : 'Settings';
-            showSuccessMessage(`No changes to apply in ${tabName.toLowerCase()}`);
+            showSuccessMessage(window.t('settings.noChanges'));
         } else if (successCount === changes.length) {
             const updatedConfig = await getCurrentConfig();
             originalConfig = updatedConfig;
@@ -329,28 +327,27 @@ async function applyAllSettings() {
                 await loadOpenaiProviders();
             }
 
-            const tabName = currentTab === 'basic' ? 'Basic Settings' :
-                currentTab === 'access-token' ? 'Access Token' :
-                    currentTab === 'api' ? 'Third Party API Keys' :
-                        currentTab === 'openai' ? 'OpenAI Compatibility' : 'Settings';
-            showSuccessMessage(`Applied ${successCount} ${tabName.toLowerCase()} setting(s) successfully`);
+            showSuccessMessage(window.t('settings.success'));
 
             if (portChanged && localStorage.getItem('type') === 'local') {
                 console.log('Port configuration has changed, need to restart CLIProxyAPI process');
-                showSuccessMessage('Port configuration saved, restarting CLIProxyAPI process...');
+                showSuccessMessage(window.t('settings.success'));
                 if (window.__TAURI__?.core?.invoke) {
-                    window.__TAURI__.core.invoke('restart_cliproxyapi');
+                    window.__TAURI__.core.invoke('restart_cliproxyapi', {
+                        trayOpenSettings: window.t('tray.settings'),
+                        trayQuit: window.t('tray.quit')
+                    });
                 }
             }
         } else {
-            showError(`Failed to apply ${changes.length - successCount} setting(s)`);
+            showError(window.t('settings.failed'));
         }
     } catch (error) {
         console.error('Error applying settings:', error);
-        showError('Network error');
+        showError(window.t('settings.networkError'));
     } finally {
         applyBtn.disabled = false;
-        applyBtn.textContent = 'Apply';
+        applyBtn.textContent = window.t('settings.saveBtn');
     }
 }
 
@@ -408,14 +405,10 @@ async function resetAllSettings() {
         }
 
         originalConfig = serverConfig;
-        const tabName = currentTab === 'basic' ? 'Basic Settings' :
-            currentTab === 'access-token' ? 'Access Token' :
-                currentTab === 'api' ? 'Third Party API Keys' :
-                    currentTab === 'openai' ? 'OpenAI Compatibility' : 'Settings';
-        showSuccessMessage(`${tabName} reset to server config`);
+        showSuccessMessage(window.t('settings.success'));
     } catch (error) {
         console.error('Error resetting settings:', error);
-        showError('Failed to reset settings');
+        showError(window.t('settings.failed'));
     }
 }
 

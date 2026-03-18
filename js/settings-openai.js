@@ -28,7 +28,7 @@ async function loadOpenaiProviders() {
         renderOpenaiProviders();
     } catch (error) {
         console.error('Error loading OpenAI providers:', error);
-        showError('Failed to load OpenAI providers');
+        showError(window.t('settings.failed'));
         renderOpenaiProviders();
     }
 }
@@ -42,8 +42,8 @@ function renderOpenaiProviders() {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🤖</div>
-                <div class="empty-state-text">No OpenAI Compatibility Providers</div>
-                <div class="empty-state-subtitle">Add your first provider to get started</div>
+                <div class="empty-state-text">${window.t('settings.openai.empty')}</div>
+                <div class="empty-state-subtitle">${window.t('settings.openai.empty_subtitle')}</div>
             </div>
         `;
         return;
@@ -52,26 +52,26 @@ function renderOpenaiProviders() {
     openaiProviders.forEach((provider, index) => {
         const providerItem = document.createElement('div');
         providerItem.className = 'openai-provider-item';
-    const apiKeysCount = provider['api-key-entries'] ? provider['api-key-entries'].length : 0;
-    const modelsCount = provider.models ? provider.models.length : 0;
-    const headersText = provider.headers ? JSON.stringify(provider.headers) : '';
-    providerItem.innerHTML = `
+        const apiKeysCount = provider['api-key-entries'] ? provider['api-key-entries'].length : 0;
+        const modelsCount = provider.models ? provider.models.length : 0;
+        const headersText = provider.headers ? JSON.stringify(provider.headers) : '';
+        providerItem.innerHTML = `
         <div class="openai-provider-info">
             <div class="openai-provider-name">${provider.name}</div>
             <div class="openai-provider-base-url">${provider['base-url']}</div>
             <div class="openai-provider-details">
                 <div class="openai-provider-detail">
-                    <strong>${apiKeysCount}</strong> API Key${apiKeysCount !== 1 ? 's' : ''}
+                    <strong>${apiKeysCount}</strong> ${apiKeysCount === 1 ? window.t('settings.openai.api_key') : window.t('settings.openai.api_keys')}
                 </div>
                 <div class="openai-provider-detail">
-                    <strong>${modelsCount}</strong> Model${modelsCount !== 1 ? 's' : ''}
+                    <strong>${modelsCount}</strong> ${modelsCount === 1 ? window.t('settings.openai.model') : window.t('settings.openai.models')}
                 </div>
-                ${headersText ? `<div class="openai-provider-detail">Headers: ${headersText}</div>` : ''}
+                ${headersText ? `<div class="openai-provider-detail">${window.t('settings.openai.headers')}: ${headersText}</div>` : ''}
             </div>
         </div>
             <div class="openai-provider-actions">
-                <button class="openai-provider-btn edit" onclick="editOpenaiProvider(${index})">Edit</button>
-                <button class="openai-provider-btn delete" onclick="deleteOpenaiProvider(${index})">Delete</button>
+                <button class="openai-provider-btn edit" onclick="editOpenaiProvider(${index})">${window.t('settings.auth.edit') || 'Edit'}</button>
+                <button class="openai-provider-btn delete" onclick="deleteOpenaiProvider(${index})">${window.t('settings.auth.delete') || 'Delete'}</button>
             </div>
         `;
         list.appendChild(providerItem);
@@ -80,7 +80,7 @@ function renderOpenaiProviders() {
 
 function showOpenaiProviderModal(editIndex = null) {
     currentProviderEditIndex = editIndex;
-    providerModalTitle.textContent = editIndex !== null ? 'Edit Provider' : 'Add Provider';
+    providerModalTitle.textContent = editIndex !== null ? window.t('settings.openai.edit_provider') : window.t('settings.openai.add_provider');
     providerNameInput.value = '';
     providerBaseUrlInput.value = '';
     providerHeadersInput.value = '';
@@ -109,23 +109,23 @@ function saveOpenaiProvider() {
     const baseUrl = providerBaseUrlInput.value.trim();
     const currentTab = document.querySelector('.tab.active').getAttribute('data-tab');
     if (currentTab !== 'openai') {
-        showError('Please switch to OpenAI Compatibility tab to manage providers');
+        showError(window.t('settings.operation_failed', { error: window.t('settings.openai.switch_tab_msg') }));
         return;
     }
     clearProviderFormErrors();
     let hasErrors = false;
     if (!name) {
-        showProviderFieldError(providerNameInput, 'Please fill in this field');
+        showProviderFieldError(providerNameInput, window.t('settings.invalid'));
         hasErrors = true;
     }
     if (!baseUrl) {
-        showProviderFieldError(providerBaseUrlInput, 'Please fill in this field');
+        showProviderFieldError(providerBaseUrlInput, window.t('settings.invalid'));
         hasErrors = true;
     }
     const { apiKeys, models } = getDynamicInputData();
     if (apiKeys.length === 0) {
         const firstApiKeyInput = apiKeysContainer.querySelector('.dynamic-input:first-child');
-        if (firstApiKeyInput) showProviderFieldError(firstApiKeyInput, 'Please fill in this field');
+        if (firstApiKeyInput) showProviderFieldError(firstApiKeyInput, window.t('settings.invalid'));
         hasErrors = true;
     }
     if (!hasErrors && apiKeys.length > 0) {
@@ -136,7 +136,7 @@ function saveOpenaiProvider() {
                 const apiKeyRows = apiKeysContainer.querySelectorAll('.dynamic-input-row');
                 if (apiKeyRows[i]) {
                     const apiKeyInput = apiKeyRows[i].querySelector('.dynamic-input:first-child');
-                    if (apiKeyInput) showProviderFieldError(apiKeyInput, 'This API key already exists');
+                    if (apiKeyInput) showProviderFieldError(apiKeyInput, window.t('settings.invalid'));
                 }
                 hasErrors = true;
                 break;
@@ -151,7 +151,7 @@ function saveOpenaiProvider() {
                 const modelRows = modelsContainer.querySelectorAll('.dynamic-input-row');
                 if (modelRows[i]) {
                     const aliasInput = modelRows[i].querySelector('.dynamic-input:nth-child(2)');
-                    if (aliasInput) showProviderFieldError(aliasInput, 'This alias name already exists');
+                    if (aliasInput) showProviderFieldError(aliasInput, window.t('settings.invalid'));
                 }
                 hasErrors = true;
                 break;
@@ -163,20 +163,20 @@ function saveOpenaiProvider() {
         try {
             const parsed = JSON.parse(providerHeadersInput.value.trim());
             if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-                showProviderFieldError(providerHeadersInput, 'Headers must be a JSON object');
+                showProviderFieldError(providerHeadersInput, window.t('settings.invalid'));
                 hasErrors = true;
             } else {
                 headersObj = parsed;
             }
         } catch (e) {
-            showProviderFieldError(providerHeadersInput, 'Headers must be valid JSON');
+            showProviderFieldError(providerHeadersInput, window.t('settings.invalid'));
             hasErrors = true;
         }
     }
     if (!hasErrors) {
         const isDuplicate = openaiProviders.some((provider, index) => index !== currentProviderEditIndex && provider.name === name);
         if (isDuplicate) {
-            showProviderFieldError(providerNameInput, 'This provider name already exists');
+            showProviderFieldError(providerNameInput, window.t('settings.invalid'));
             hasErrors = true;
         }
     }
@@ -197,8 +197,8 @@ function saveOpenaiProvider() {
 function editOpenaiProvider(index) { showOpenaiProviderModal(index); }
 function deleteOpenaiProvider(index) {
     showConfirmDialog(
-        'Confirm Delete',
-        'Are you sure you want to delete this OpenAI compatibility provider? This action cannot be undone.',
+        window.t('settings.confirm_delete_title'),
+        window.t('settings.confirm_delete_message'),
         () => { openaiProviders.splice(index, 1); renderOpenaiProviders(); }
     );
 }
@@ -228,13 +228,13 @@ function addApiKeyRow() {
     const apiKeyInput = document.createElement('input');
     apiKeyInput.type = 'text';
     apiKeyInput.className = 'form-input dynamic-input';
-    apiKeyInput.placeholder = 'Enter API key';
+    apiKeyInput.placeholder = window.t('settings.openai.api_key_placeholder');
     apiKeyInput.required = true;
 
     const proxyUrlInput = document.createElement('input');
     proxyUrlInput.type = 'text';
     proxyUrlInput.className = 'form-input dynamic-input';
-    proxyUrlInput.placeholder = 'Proxy URL (optional)';
+    proxyUrlInput.placeholder = window.t('settings.openai.proxy_url_placeholder');
 
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
@@ -273,11 +273,11 @@ function addModelRow() {
     const modelNameInput = document.createElement('input');
     modelNameInput.type = 'text';
     modelNameInput.className = 'form-input dynamic-input';
-    modelNameInput.placeholder = 'Model name';
+    modelNameInput.placeholder = window.t('settings.openai.model_name_placeholder');
     const aliasInput = document.createElement('input');
     aliasInput.type = 'text';
     aliasInput.className = 'form-input dynamic-input';
-    aliasInput.placeholder = 'Alias name';
+    aliasInput.placeholder = window.t('settings.openai.alias_name_placeholder');
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'add-row-btn';
@@ -327,14 +327,14 @@ function populateDynamicInputs(apiKeys, models) {
             const apiKeyInput = document.createElement('input');
             apiKeyInput.type = 'text';
             apiKeyInput.className = 'form-input dynamic-input';
-            apiKeyInput.placeholder = 'Enter API key';
+            apiKeyInput.placeholder = window.t('settings.openai.api_key_placeholder');
             apiKeyInput.required = true;
             apiKeyInput.value = apiKeyEntry['api-key'] || '';
 
             const proxyUrlInput = document.createElement('input');
             proxyUrlInput.type = 'text';
             proxyUrlInput.className = 'form-input dynamic-input';
-            proxyUrlInput.placeholder = 'Proxy URL (optional)';
+            proxyUrlInput.placeholder = window.t('settings.openai.proxy_url_placeholder');
             proxyUrlInput.value = apiKeyEntry['proxy-url'] || '';
 
             const addBtn = document.createElement('button');
@@ -368,13 +368,13 @@ function populateDynamicInputs(apiKeys, models) {
             const modelNameInput = document.createElement('input');
             modelNameInput.type = 'text';
             modelNameInput.className = 'form-input dynamic-input';
-            modelNameInput.placeholder = 'Model name';
+            modelNameInput.placeholder = window.t('settings.openai.model_name_placeholder');
             modelNameInput.value = model.name || '';
 
             const aliasInput = document.createElement('input');
             aliasInput.type = 'text';
             aliasInput.className = 'form-input dynamic-input';
-            aliasInput.placeholder = 'Alias name';
+            aliasInput.placeholder = window.t('settings.openai.alias_name_placeholder');
             aliasInput.value = model.alias || '';
 
             const addBtn = document.createElement('button');

@@ -1104,7 +1104,11 @@ fn kill_process_on_port(port: u16) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn start_cliproxyapi(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
+fn start_cliproxyapi(
+    app: tauri::AppHandle,
+    tray_open_settings: Option<String>,
+    tray_quit: Option<String>,
+) -> Result<serde_json::Value, String> {
     // Check if already running by testing PID
     if let Some(pid) = *PROCESS_PID.lock() {
         #[cfg(target_os = "windows")]
@@ -1226,7 +1230,11 @@ fn start_cliproxyapi(app: tauri::AppHandle) -> Result<serde_json::Value, String>
     std::mem::drop(child);
     // Don't monitor - process is fully detached
     // Create tray icon when local process starts
-    let _ = create_tray(&app);
+    let _ = create_tray(
+        &app,
+        tray_open_settings.unwrap_or_else(|| "Open Settings".to_string()),
+        tray_quit.unwrap_or_else(|| "Quit".to_string()),
+    );
 
     // Start keep-alive mechanism for Local mode
     let config = read_config_yaml().unwrap_or(json!({}));
@@ -1237,7 +1245,11 @@ fn start_cliproxyapi(app: tauri::AppHandle) -> Result<serde_json::Value, String>
 }
 
 #[tauri::command]
-fn restart_cliproxyapi(app: tauri::AppHandle) -> Result<(), String> {
+fn restart_cliproxyapi(
+    app: tauri::AppHandle,
+    tray_open_settings: Option<String>,
+    tray_quit: Option<String>,
+) -> Result<(), String> {
     // Kill existing detached process if PID is stored
     if let Some(pid) = *PROCESS_PID.lock() {
         println!("[CLIProxyAPI][RESTART] Killing old process PID: {}", pid);
@@ -1375,7 +1387,11 @@ fn stop_process_internal() {
     );
 }
 
-fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
+fn create_tray(
+    app: &tauri::AppHandle,
+    open_settings_label: String,
+    quit_label: String,
+) -> tauri::Result<()> {
     use tauri::{
         menu::{MenuBuilder, MenuItemBuilder},
         tray::TrayIconBuilder,
@@ -1385,8 +1401,9 @@ fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         return Ok(());
     }
 
-    let open_settings = MenuItemBuilder::with_id("open_settings", "Open Settings").build(app)?;
-    let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
+    let open_settings =
+        MenuItemBuilder::with_id("open_settings", open_settings_label).build(app)?;
+    let quit = MenuItemBuilder::with_id("quit", quit_label).build(app)?;
     let menu = MenuBuilder::new(app)
         .items(&[&open_settings, &quit])
         .build()?;
@@ -1396,7 +1413,7 @@ fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         .tooltip("EasyCLI")
         .on_menu_event(|app, event| match event.id().as_ref() {
             "open_settings" => {
-                let _ = open_settings_window(app.clone());
+                let _ = open_settings_window(app.clone(), None);
             }
             "quit" => {
                 // Just exit app - CLIProxyAPI continues running
@@ -1616,9 +1633,12 @@ fn stop_callback_server(listen_port: u16) -> Result<serde_json::Value, String> {
 }
 
 #[tauri::command]
-fn open_settings_window(app: tauri::AppHandle) -> Result<(), String> {
+fn open_settings_window(app: tauri::AppHandle, title: Option<String>) -> Result<(), String> {
     // If settings window already exists (predefined in config), just show and focus it
     if let Some(win) = app.get_webview_window("settings") {
+        if let Some(t) = title {
+            let _ = win.set_title(&t);
+        }
         let _ = win.show();
         let _ = win.set_focus();
         // Ensure Dock icon is visible while settings is open (macOS only)
@@ -1641,12 +1661,12 @@ fn open_settings_window(app: tauri::AppHandle) -> Result<(), String> {
 
     // Otherwise create it and show
     let url = WebviewUrl::App("settings.html".into());
-    let win = WebviewWindowBuilder::new(&app, "settings", url)
-        .title("EasyCLI Control Panel")
+    let mut builder = WebviewWindowBuilder::new(&app, "settings", url)
+        .title(title.unwrap_or_else(|| "EasyCLI Control Panel".to_string()))
         .inner_size(930.0, 600.0)
-        .resizable(false)
-        .build()
-        .map_err(|e| e.to_string())?;
+        .resizable(false);
+    
+    let win = builder.build().map_err(|e| e.to_string())?;
     let _ = win.show();
     let _ = win.set_focus();
     // Ensure Dock icon is visible while settings is open (macOS only)
@@ -1668,9 +1688,12 @@ fn open_settings_window(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn open_login_window(app: tauri::AppHandle) -> Result<(), String> {
+fn open_login_window(app: tauri::AppHandle, title: Option<String>) -> Result<(), String> {
     // If login window already exists (predefined in config), show and focus it
     if let Some(win) = app.get_webview_window("main") {
+        if let Some(t) = title {
+            let _ = win.set_title(&t);
+        }
         let _ = win.show();
         let _ = win.set_focus();
         // Close settings window shortly after to ensure clean state
@@ -1687,7 +1710,7 @@ fn open_login_window(app: tauri::AppHandle) -> Result<(), String> {
     // Otherwise create the login window and close settings
     let url = WebviewUrl::App("login.html".into());
     let win = WebviewWindowBuilder::new(&app, "main", url)
-        .title("EasyCLI")
+        .title(title.unwrap_or_else(|| "EasyCLI".to_string()))
         .inner_size(530.0, 380.0)
         .resizable(false)
         .build()

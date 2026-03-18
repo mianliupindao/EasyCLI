@@ -40,7 +40,7 @@ async function loadAllApiKeys() {
         ]);
     } catch (error) {
         console.error('Error loading API keys:', error);
-        showError('Failed to load API keys');
+        showError(window.t('settings.failed'));
     }
 }
 
@@ -52,7 +52,7 @@ async function loadGeminiKeys() {
         renderGeminiKeys();
     } catch (error) {
         console.error('Error loading Gemini keys:', error);
-        showError('Failed to load Gemini API keys');
+        showError(window.t('settings.failed'));
         renderGeminiKeys();
     }
 }
@@ -65,7 +65,7 @@ async function loadCodexKeys() {
         renderCodexKeys();
     } catch (error) {
         console.error('Error loading Codex keys:', error);
-        showError('Failed to load Codex API keys');
+        showError(window.t('settings.failed'));
         renderCodexKeys();
     }
 }
@@ -78,7 +78,7 @@ async function loadClaudeKeys() {
         renderClaudeKeys();
     } catch (error) {
         console.error('Error loading Claude keys:', error);
-        showError('Failed to load Claude API keys');
+        showError(window.t('settings.failed'));
         renderClaudeKeys();
     }
 }
@@ -92,8 +92,8 @@ function renderGeminiKeys() {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🔑</div>
-                <div class="empty-state-text">No Gemini API Keys</div>
-                <div class="empty-state-subtitle">Add your first Gemini API key to get started</div>
+                <div class="empty-state-text">${window.t('settings.api.empty_gemini')}</div>
+                <div class="empty-state-subtitle">${window.t('settings.api.empty_subtitle_gemini')}</div>
             </div>
         `;
         return;
@@ -109,14 +109,14 @@ function renderGeminiKeys() {
         keyItem.innerHTML = `
             <div class="api-key-info">
                 <div class="api-key-value">${keyObj['api-key'] || ''}</div>
-                ${baseUrl ? `<div class="api-key-base-url">Base URL: ${baseUrl}</div>` : ''}
-                ${proxyUrl ? `<div class="api-key-proxy-url">Proxy URL: ${proxyUrl}</div>` : ''}
-                ${excluded ? `<div class="api-key-excluded">Excluded: ${excluded}</div>` : ''}
-                ${headersText ? `<div class="api-key-headers">Headers: ${headersText}</div>` : ''}
+                ${baseUrl ? `<div class="api-key-base-url">${window.t('settings.base_url')}: ${baseUrl}</div>` : ''}
+                ${proxyUrl ? `<div class="api-key-proxy-url">${window.t('settings.proxy_url')}: ${proxyUrl}</div>` : ''}
+                ${excluded ? `<div class="api-key-excluded">${window.t('settings.excluded')}: ${excluded}</div>` : ''}
+                ${headersText ? `<div class="api-key-headers">${window.t('settings.openai.headers')}: ${headersText}</div>` : ''}
             </div>
             <div class="api-key-actions">
-                <button class="api-key-btn edit" onclick="editGeminiKey(${index})">Edit</button>
-                <button class="api-key-btn delete" onclick="deleteGeminiKey(${index})">Delete</button>
+                <button class="api-key-btn edit" onclick="editGeminiKey(${index})">${window.t('settings.auth.edit') || 'Edit'}</button>
+                <button class="api-key-btn delete" onclick="deleteGeminiKey(${index})">${window.t('settings.auth.delete') || 'Delete'}</button>
             </div>
         `;
         list.appendChild(keyItem);
@@ -132,8 +132,8 @@ function renderCodexKeys() {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🔑</div>
-                <div class="empty-state-text">No Codex API Keys</div>
-                <div class="empty-state-subtitle">Add your first Codex API key to get started</div>
+                <div class="empty-state-text">${window.t('settings.api.empty_codex')}</div>
+                <div class="empty-state-subtitle">${window.t('settings.api.empty_subtitle_codex')}</div>
             </div>
         `;
         return;
@@ -149,14 +149,14 @@ function renderCodexKeys() {
         keyItem.innerHTML = `
             <div class="api-key-info">
                 <div class="api-key-value">${keyObj['api-key']}</div>
-                ${baseUrl ? `<div class=\"api-key-base-url\">Base URL: ${baseUrl}</div>` : ''}
-                ${proxyUrl ? `<div class=\"api-key-proxy-url\">Proxy URL: ${proxyUrl}</div>` : ''}
-                ${excluded ? `<div class=\"api-key-excluded\">Excluded: ${excluded}</div>` : ''}
-                ${headersText ? `<div class=\"api-key-headers\">Headers: ${headersText}</div>` : ''}
+                ${baseUrl ? `<div class=\"api-key-base-url\">${window.t('settings.base_url')}: ${baseUrl}</div>` : ''}
+                ${proxyUrl ? `<div class=\"api-key-proxy-url\">${window.t('settings.proxy_url')}: ${proxyUrl}</div>` : ''}
+                ${excluded ? `<div class=\"api-key-excluded\">${window.t('settings.excluded')}: ${excluded}</div>` : ''}
+                ${headersText ? `<div class=\"api-key-headers\">${window.t('settings.openai.headers')}: ${headersText}</div>` : ''}
             </div>
             <div class="api-key-actions">
-                <button class="api-key-btn edit" onclick="editCodexKey(${index})">Edit</button>
-                <button class="api-key-btn delete" onclick="deleteCodexKey(${index})">Delete</button>
+                <button class="api-key-btn edit" onclick="editCodexKey(${index})">${window.t('settings.auth.edit') || 'Edit'}</button>
+                <button class="api-key-btn delete" onclick="deleteCodexKey(${index})">${window.t('settings.auth.delete') || 'Delete'}</button>
             </div>
         `;
         list.appendChild(keyItem);
@@ -172,8 +172,8 @@ function renderClaudeKeys() {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🔑</div>
-                <div class="empty-state-text">No Claude API Keys</div>
-                <div class="empty-state-subtitle">Add your first Claude API key to get started</div>
+                <div class="empty-state-text">${window.t('settings.api.empty_claude')}</div>
+                <div class="empty-state-subtitle">${window.t('settings.api.empty_subtitle_claude')}</div>
             </div>
         `;
         return;
@@ -189,14 +189,14 @@ function renderClaudeKeys() {
         keyItem.innerHTML = `
             <div class="api-key-info">
                 <div class="api-key-value">${keyObj['api-key']}</div>
-                ${baseUrl ? `<div class=\"api-key-base-url\">Base URL: ${baseUrl}</div>` : ''}
-                ${proxyUrl ? `<div class=\"api-key-proxy-url\">Proxy URL: ${proxyUrl}</div>` : ''}
-                ${excluded ? `<div class=\"api-key-excluded\">Excluded: ${excluded}</div>` : ''}
-                ${headersText ? `<div class=\"api-key-headers\">Headers: ${headersText}</div>` : ''}
+                ${baseUrl ? `<div class=\"api-key-base-url\">${window.t('settings.base_url')}: ${baseUrl}</div>` : ''}
+                ${proxyUrl ? `<div class=\"api-key-proxy-url\">${window.t('settings.proxy_url')}: ${proxyUrl}</div>` : ''}
+                ${excluded ? `<div class=\"api-key-excluded\">${window.t('settings.excluded')}: ${excluded}</div>` : ''}
+                ${headersText ? `<div class=\"api-key-headers\">${window.t('settings.openai.headers')}: ${headersText}</div>` : ''}
             </div>
             <div class="api-key-actions">
-                <button class="api-key-btn edit" onclick="editClaudeKey(${index})">Edit</button>
-                <button class="api-key-btn delete" onclick="deleteClaudeKey(${index})">Delete</button>
+                <button class="api-key-btn edit" onclick="editClaudeKey(${index})">${window.t('settings.auth.edit') || 'Edit'}</button>
+                <button class="api-key-btn delete" onclick="deleteClaudeKey(${index})">${window.t('settings.auth.delete') || 'Delete'}</button>
             </div>
         `;
         list.appendChild(keyItem);
@@ -207,7 +207,7 @@ function renderClaudeKeys() {
 function showApiKeyModal(type, editIndex = null) {
     currentApiType = type;
     currentEditIndex = editIndex;
-    modalTitle.textContent = editIndex !== null ? 'Edit API Key' : 'Add API Key';
+    modalTitle.textContent = editIndex !== null ? window.t('settings.api.edit_key') : window.t('settings.api.add_key');
     apiKeyInput.value = '';
     baseUrlInput.value = '';
     apiKeyProxyUrlInput.value = '';
@@ -281,7 +281,7 @@ function saveApiKey() {
 
     const currentTab = document.querySelector('.tab.active').getAttribute('data-tab');
     if (currentTab !== 'api') {
-        showError('Please switch to Third Party API Keys tab to manage keys');
+        showError(window.t('settings.operation_failed', { error: window.t('settings.api.switch_tab_msg') }));
         return;
     }
 
@@ -289,7 +289,7 @@ function saveApiKey() {
     if (!apiKey) {
         apiKeyInput.classList.add('error');
         apiKeyInput.focus();
-        showError('Please fill in this field');
+        showError(window.t('settings.invalid'));
         hasErrors = true;
     }
 
@@ -297,7 +297,7 @@ function saveApiKey() {
         if (!baseUrl) {
             baseUrlInput.classList.add('error');
             baseUrlInput.focus();
-            showError('Please fill in this field');
+            showError(window.t('settings.invalid'));
             hasErrors = true;
         }
     }
@@ -309,13 +309,13 @@ function saveApiKey() {
                 if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
                     headersInput.classList.add('error');
                     headersInput.focus();
-                    showError('Headers must be a JSON object');
+                    showError(window.t('settings.invalid'));
                     hasErrors = true;
                 }
             } catch (e) {
                 headersInput.classList.add('error');
                 headersInput.focus();
-                showError('Headers must be valid JSON');
+                showError(window.t('settings.invalid'));
                 hasErrors = true;
             }
         }
@@ -397,8 +397,8 @@ function editClaudeKey(index) { showApiKeyModal('claude', index); }
 
 function deleteGeminiKey(index) {
     showConfirmDialog(
-        'Confirm Delete',
-        'Are you sure you want to delete this Gemini API key? This action cannot be undone.',
+        window.t('settings.confirm_delete_title'),
+        window.t('settings.confirm_delete_message'),
         () => {
             geminiKeys.splice(index, 1);
             renderGeminiKeys();
@@ -408,8 +408,8 @@ function deleteGeminiKey(index) {
 
 function deleteCodexKey(index) {
     showConfirmDialog(
-        'Confirm Delete',
-        'Are you sure you want to delete this Codex API key? This action cannot be undone.',
+        window.t('settings.confirm_delete_title'),
+        window.t('settings.confirm_delete_message'),
         () => {
             codexKeys.splice(index, 1);
             renderCodexKeys();
@@ -419,8 +419,8 @@ function deleteCodexKey(index) {
 
 function deleteClaudeKey(index) {
     showConfirmDialog(
-        'Confirm Delete',
-        'Are you sure you want to delete this Claude API key? This action cannot be undone.',
+        window.t('settings.confirm_delete_title'),
+        window.t('settings.confirm_delete_message'),
         () => {
             claudeKeys.splice(index, 1);
             renderClaudeKeys();

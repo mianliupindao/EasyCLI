@@ -18,7 +18,7 @@ async function startCodexAuthFlow() {
     } catch (error) {
         console.error('Error starting Codex auth flow:', error);
         const msg = (error && (error.message || String(error))) || 'Unknown error';
-        showError('Failed to start Codex authentication flow: ' + msg);
+        showError(window.t('settings.operation_failed', { error: msg }));
         if (codexLocalServer) {
             await stopCodexLocalServer();
         }
@@ -72,7 +72,7 @@ async function handleCodexCallback(req, res) {
         console.log('Redirecting to:', redirectUrl);
         res.writeHead(302, { 'Location': redirectUrl });
         res.end();
-        setTimeout(async () => { await stopCodexLocalServer(); showSuccessMessage('Codex authentication completed!'); }, 1000);
+        setTimeout(async () => { await stopCodexLocalServer(); showSuccessMessage(window.t('settings.auth.codex_success')); }, 1000);
     } catch (error) {
         console.error('Error handling Codex callback:', error);
         res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -123,23 +123,23 @@ function showCodexAuthDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Codex Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.codex_title')}</h3>
                 <button class="modal-close" id="codex-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please copy the link below and open it in your browser, or click the "Open Link" button directly:</p>
+                    <p>${window.t('settings.auth.codex_desc')}</p>
                     <div class="auth-url-container">
                         <input type="text" id="codex-auth-url-input" class="form-input" value="${codexAuthUrl}" readonly>
-                        <button type="button" id="codex-copy-btn" class="copy-btn">Copy Link</button>
+                        <button type="button" id="codex-copy-btn" class="copy-btn">${window.t('settings.auth.copy_link')}</button>
                     </div>
                     <div class="auth-status" id="codex-auth-status" style="display: none;">
-                        <div class="auth-status-text">Waiting for authentication to complete...</div>
+                        <div class="auth-status-text">${window.t('settings.auth.waiting')}</div>
                         <div class="auth-status-spinner"></div>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="codex-open-btn" class="btn-primary">Open Link</button>
-                        <button type="button" id="codex-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="codex-open-btn" class="btn-primary">${window.t('settings.auth.open_link')}</button>
+                        <button type="button" id="codex-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -159,22 +159,22 @@ function showCodexAuthDialog() {
 }
 
 async function copyCodexUrl() {
-    try { await navigator.clipboard.writeText(codexAuthUrl); showSuccessMessage('Link copied to clipboard'); }
-    catch (error) { console.error('Error copying Codex URL:', error); showError('Failed to copy link: ' + error.message); }
+    try { await navigator.clipboard.writeText(codexAuthUrl); showSuccessMessage(window.t('settings.auth.link_copied')); }
+    catch (error) { console.error('Error copying Codex URL:', error); showError(window.t('settings.failed')); }
 }
 
 function openCodexUrl() {
     try {
         if (window.__TAURI__?.shell?.open) { window.__TAURI__.shell.open(codexAuthUrl); }
         else { window.open(codexAuthUrl, '_blank'); }
-        showSuccessMessage('Authentication link opened in browser');
+        showSuccessMessage(window.t('settings.auth.link_opened'));
 
         // Show polling status
         const statusDiv = document.getElementById('codex-auth-status');
         if (statusDiv) {
             statusDiv.style.display = 'block';
         }
-    } catch (error) { console.error('Error opening Codex URL:', error); showError('Failed to open link: ' + error.message); }
+    } catch (error) { console.error('Error opening Codex URL:', error); showError(window.t('settings.failed')); }
 }
 
 // Start Codex authentication status polling
@@ -191,7 +191,7 @@ async function startCodexAuthPolling() {
             () => {
                 // Authentication successful
                 console.log('Codex Authentication successful');
-                showSuccessMessage('Codex authentication completed!');
+                showSuccessMessage(window.t('settings.auth.codex_success'));
                 cancelCodexAuth();
                 // Refresh auth files list
                 if (typeof loadAuthFiles === 'function') {
@@ -201,13 +201,13 @@ async function startCodexAuthPolling() {
             (error) => {
                 // Authentication failed
                 console.error('Codex Authentication failed:', error);
-                showError('Codex Authentication failed: ' + error);
+                showError(window.t('settings.operation_failed', { error: error }));
                 cancelCodexAuth();
             }
         );
     } catch (error) {
         console.error('Codex Authentication polling error:', error);
-        showError('Error occurred during Codex Authentication: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
         cancelCodexAuth();
     }
 }
@@ -336,7 +336,7 @@ async function pollCodexAuthStatus(authType, state, onSuccess, onError) {
                 codexAbortController.abort();
                 codexAbortController = null;
             }
-            onError('Authentication timeout, please try again');
+            onError(window.t('settings.auth.timeout'));
             reject(new Error('Authentication timeout'));
         }, 300000);
     });

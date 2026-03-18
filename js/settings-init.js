@@ -2,6 +2,17 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        const languageSelect = document.getElementById('language-select');
+        if (languageSelect) {
+            languageSelect.value = localStorage.getItem('language') || (navigator.language.startsWith('zh') ? 'zh-CN' : 'en');
+            languageSelect.addEventListener('change', async (e) => {
+                if (window.i18n) {
+                    await window.i18n.setLanguage(e.target.value);
+                    location.reload();
+                }
+            });
+        }
+
         const currentConfig = await getCurrentConfig();
         originalConfig = currentConfig;
         await initializeDebugSwitch();
@@ -33,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('Error initializing settings:', error);
-        showError('Failed to load settings');
+        showError(window.t('settings.failed'));
     }
 });
 

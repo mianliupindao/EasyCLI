@@ -16,19 +16,19 @@ function showGeminiProjectIdDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Gemini CLI Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.gemini_project_title')}</h3>
                 <button class="modal-close" id="gemini-project-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please enter Google Cloud Project ID (optional):</p>
+                    <p>${window.t('settings.auth.gemini_project_desc')}</p>
                     <div class="form-group">
-                        <input type="text" id="gemini-project-id-input" class="form-input" placeholder="Enter Project ID (optional)">
-                        <small class="form-help">If no Project ID is entered, the default project will be used</small>
+                        <input type="text" id="gemini-project-id-input" class="form-input" placeholder="${window.t('settings.auth.gemini_project_placeholder')}">
+                        <small class="form-help">${window.t('settings.auth.gemini_project_help')}</small>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="gemini-project-confirm-btn" class="btn-primary">Confirm</button>
-                        <button type="button" id="gemini-project-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="gemini-project-confirm-btn" class="btn-primary">${window.t('settings.auth.confirm')}</button>
+                        <button type="button" id="gemini-project-cancel-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@ async function confirmGeminiProjectId() {
         await startGeminiAuthFlow();
     } catch (error) {
         console.error('Error confirming Gemini project ID:', error);
-        showError('Failed to start Gemini CLI Authentication flow: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     }
 }
 
@@ -82,7 +82,7 @@ async function startGeminiAuthFlow() {
     } catch (error) {
         console.error('Error starting Gemini auth flow:', error);
         const msg = (error && (error.message || String(error))) || 'Unknown error';
-        showError('Failed to start Gemini CLI Authentication flow: ' + msg);
+        showError(window.t('settings.operation_failed', { error: msg }));
         if (geminiLocalServer) { await stopGeminiLocalServer(); }
     }
 }
@@ -136,7 +136,7 @@ async function handleGeminiCallback(req, res) {
         console.log('Redirecting to:', redirectUrl);
         res.writeHead(302, { 'Location': redirectUrl });
         res.end();
-        setTimeout(async () => { await stopGeminiLocalServer(); showSuccessMessage('Gemini CLI Authentication completed!'); }, 1000);
+        setTimeout(async () => { await stopGeminiLocalServer(); showSuccessMessage(window.t('settings.success')); }, 1000);
     } catch (error) {
         console.error('Error handling Gemini callback:', error);
         res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -194,23 +194,23 @@ function showGeminiAuthDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Gemini CLI Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.gemini_auth_title')}</h3>
                 <button class="modal-close" id="gemini-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please copy the link below and open it in your browser, or click the "Open Link" button directly:</p>
+                    <p>${window.t('settings.auth.desc_generic')}</p>
                     <div class="auth-url-container">
                         <input type="text" id="gemini-auth-url-input" class="form-input" value="${geminiAuthUrl}" readonly>
-                        <button type="button" id="copy-gemini-url-btn" class="copy-btn">Copy Link</button>
+                        <button type="button" id="copy-gemini-url-btn" class="copy-btn">${window.t('settings.auth.copy_link')}</button>
                     </div>
                     <div class="auth-status" id="gemini-auth-status" style="display: none;">
-                        <div class="auth-status-text">Waiting for authentication to complete...</div>
+                        <div class="auth-status-text">${window.t('settings.auth.waiting')}</div>
                         <div class="auth-status-spinner"></div>
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="open-gemini-url-btn" class="btn-primary">Open Link</button>
-                        <button type="button" id="cancel-gemini-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="open-gemini-url-btn" class="btn-primary">${window.t('settings.auth.open_link')}</button>
+                        <button type="button" id="cancel-gemini-btn" class="btn-cancel">${window.t('login.cancelBtn')}</button>
                     </div>
                 </div>
             </div>
@@ -230,22 +230,22 @@ function showGeminiAuthDialog() {
 }
 
 async function copyGeminiUrl() {
-    try { const urlInput = document.getElementById('gemini-auth-url-input'); await navigator.clipboard.writeText(urlInput.value); showSuccessMessage('Link copied to clipboard'); }
-    catch (error) { console.error('Error copying URL:', error); showError('Failed to copy link'); }
+    try { const urlInput = document.getElementById('gemini-auth-url-input'); await navigator.clipboard.writeText(urlInput.value); showSuccessMessage(window.t('settings.auth.link_copied')); }
+    catch (error) { console.error('Error copying URL:', error); showError(window.t('settings.failed')); }
 }
 
 function openGeminiUrl() {
     try {
         if (window.__TAURI__?.shell?.open) { window.__TAURI__.shell.open(geminiAuthUrl); }
         else { window.open(geminiAuthUrl, '_blank'); }
-        showSuccessMessage('Authentication link opened in browser');
+        showSuccessMessage(window.t('settings.auth.link_opened'));
 
         // Show polling status
         const statusDiv = document.getElementById('gemini-auth-status');
         if (statusDiv) {
             statusDiv.style.display = 'block';
         }
-    } catch (error) { console.error('Error opening URL:', error); showError('Failed to open link'); }
+    } catch (error) { console.error('Error opening URL:', error); showError(window.t('settings.failed')); }
 }
 
 // Start Gemini authentication status polling
@@ -264,7 +264,7 @@ async function startGeminiAuthPolling() {
             () => {
                 // Authentication successful
                 console.log('Gemini CLI Authentication successful');
-                showSuccessMessage('Gemini CLI Authentication completed!');
+                showSuccessMessage(window.t('settings.success'));
                 cancelGeminiAuth();
                 // Refresh auth files list
                 if (typeof loadAuthFiles === 'function') {
@@ -274,13 +274,13 @@ async function startGeminiAuthPolling() {
             (error) => {
                 // Authentication failed
                 console.error('Gemini CLI Authentication failed:', error);
-                showError('Gemini CLI Authentication failed: ' + error);
+                showError(window.t('settings.operation_failed', { error: error }));
                 cancelGeminiAuth();
             }
         );
     } catch (error) {
         console.error('Gemini CLI Authentication polling error:', error);
-        showError('Error occurred during Gemini CLI Authentication: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
         cancelGeminiAuth();
     }
 }
@@ -425,7 +425,7 @@ async function pollGeminiAuthStatus(authType, state, onSuccess, onError) {
                 geminiAbortController.abort();
                 geminiAbortController = null;
             }
-            onError('Authentication timeout, please try again');
+            onError(window.t('settings.auth.timeout'));
             reject(new Error('Authentication timeout'));
         }, 300000);
     });

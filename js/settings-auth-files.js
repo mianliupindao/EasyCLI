@@ -24,7 +24,7 @@ async function loadAuthFiles() {
         updateActionButtons();
     } catch (error) {
         console.error('Error loading auth files:', error);
-        showError('Network error');
+        showError(window.t('settings.failed'));
         showEmptyAuthFiles();
         updateActionButtons();
     }
@@ -50,9 +50,9 @@ function renderAuthFiles() {
             <div class="auth-file-info">
                 <div class="auth-file-name">${file.name}</div>
                 <div class="auth-file-details">
-                    <span class="auth-file-type">Type: ${file.type || 'unknown'}</span>
+                    <span class="auth-file-type">${window.t('settings.auth.type')}: ${file.type || window.t('settings.status_unknown').toLowerCase()}</span>
                     <span class="auth-file-size">${fileSize}</span>
-                    <span>Modified: ${modTime}</span>
+                    <span>${window.t('settings.auth.modified')}: ${modTime}</span>
                 </div>
             </div>
         `;
@@ -68,8 +68,8 @@ function showEmptyAuthFiles() {
     authFilesList.innerHTML = `
         <div class="empty-state">
             <div class="empty-state-icon">📁</div>
-            <div class="empty-state-text">No authentication files</div>
-            <div class="empty-state-subtitle">Upload authentication files to manage them here</div>
+            <div class="empty-state-text">${window.t('settings.auth.files_empty')}</div>
+            <div class="empty-state-subtitle">${window.t('settings.auth.files_empty_subtitle')}</div>
         </div>
     `;
     updateActionButtons();
@@ -99,7 +99,7 @@ function updateActionButtons() {
         deleteBtn.style.display = 'block';
         newDropdown.style.display = 'block';
         downloadBtn.style.display = 'block';
-        selectAllBtn.textContent = allSelected ? 'Unselect All' : 'Select All';
+        selectAllBtn.textContent = allSelected ? window.t('settings.auth.unselect_all') : window.t('settings.auth.select_all');
         deleteBtn.disabled = !hasSelection;
         downloadBtn.disabled = !hasSelection;
     } else if (currentTab === 'access-token' || currentTab === 'api' || currentTab === 'openai' || currentTab === 'basic') {
@@ -132,30 +132,31 @@ async function deleteSelectedAuthFiles() {
     const fileCount = selectedAuthFiles.size;
     const fileText = fileCount === 1 ? 'file' : 'files';
     showConfirmDialog(
-        'Confirm Delete',
-        `Are you sure you want to delete ${fileCount} authentication ${fileText}?\nThis action cannot be undone.`,
+        window.t('settings.confirm_delete_title'),
+        `${window.t('settings.confirm_delete_message')} (${fileCount} ${fileCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files')})`,
         async () => {
             deleteBtn.disabled = true;
-            deleteBtn.textContent = 'Deleting...';
+            deleteBtn.textContent = window.t('settings.auth.deleting');
             try {
                 const result = await configManager.deleteAuthFiles(Array.from(selectedAuthFiles));
                 if (result.success) {
-                    showSuccessMessage(`Deleted ${result.successCount} file(s) successfully`);
+                    showSuccessMessage(window.t('settings.success'));
                     selectedAuthFiles.clear();
                     await loadAuthFiles();
                 } else {
                     if (result.error) {
-                        showError(result.error);
+                        showError(window.t('settings.operation_failed', { error: result.error }));
                     } else {
-                        showError(`Failed to delete ${result.errorCount} file(s)`);
+                        const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
+                        showError(window.t('settings.auth.delete_failed_count').replace('{count}', result.errorCount).replace('{fileText}', fileText));
                     }
                 }
             } catch (error) {
                 console.error('Error deleting auth files:', error);
-                showError('Network error');
+                showError(window.t('settings.failed'));
             } finally {
                 deleteBtn.disabled = false;
-                deleteBtn.textContent = 'Delete';
+                deleteBtn.textContent = window.t('settings.auth.delete');
                 updateActionButtons();
             }
         }
@@ -206,7 +207,7 @@ function createNewAuthFile(type) {
         startIFlowCookieFlow();
     } else {
         console.log(`Creating new ${typeNames[type]} auth file`);
-        showSuccessMessage(`Creating new ${typeNames[type]} auth file...`);
+        showSuccessMessage(window.t('settings.success'));
     }
 }
 
@@ -218,27 +219,27 @@ function showGeminiWebDialog() {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Gemini WEB Authentication</h3>
+                <h3 class="modal-title">${window.t('settings.auth.gemini_web_title')}</h3>
                 <button class="modal-close" id="gemini-web-modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="codex-auth-content">
-                    <p>Please enter your Gemini Web cookies:</p>
+                    <p>${window.t('settings.auth.gemini_web_desc')}</p>
                     <div class="form-group">
-                        <label for="gemini-web-secure-1psid-input">Secure-1PSID:</label>
-                        <input type="text" id="gemini-web-secure-1psid-input" class="form-input" placeholder="Enter Secure-1PSID">
+                        <label for="gemini-web-secure-1psid-input">${window.t('settings.auth.gemini_web_1psid_label')}:</label>
+                        <input type="text" id="gemini-web-secure-1psid-input" class="form-input" placeholder="${window.t('settings.auth.gemini_web_1psid_placeholder')}">
                     </div>
                     <div class="form-group">
-                        <label for="gemini-web-secure-1psidts-input">Secure-1PSIDTS:</label>
-                        <input type="text" id="gemini-web-secure-1psidts-input" class="form-input" placeholder="Enter Secure-1PSIDTS">
+                        <label for="gemini-web-secure-1psidts-input">${window.t('settings.auth.gemini_web_1psidts_label')}:</label>
+                        <input type="text" id="gemini-web-secure-1psidts-input" class="form-input" placeholder="${window.t('settings.auth.gemini_web_1psidts_placeholder')}">
                     </div>
                     <div class="form-group">
-                        <label for="gemini-web-email-input" style="text-align: left;">Email:</label>
-                        <input type="email" id="gemini-web-email-input" class="form-input" placeholder="Enter your email address">
+                        <label for="gemini-web-email-input" style="text-align: left;">${window.t('settings.auth.gemini_web_email_label')}:</label>
+                        <input type="email" id="gemini-web-email-input" class="form-input" placeholder="${window.t('settings.auth.gemini_web_email_placeholder')}">
                     </div>
                     <div class="auth-actions">
-                        <button type="button" id="gemini-web-confirm-btn" class="btn-primary">Confirm</button>
-                        <button type="button" id="gemini-web-cancel-btn" class="btn-cancel">Cancel</button>
+                        <button type="button" id="gemini-web-confirm-btn" class="btn-primary">${window.t('settings.auth.confirm')}</button>
+                        <button type="button" id="gemini-web-cancel-btn" class="btn-cancel">${window.t('settings.auth.cancel')}</button>
                     </div>
                 </div>
             </div>
@@ -277,7 +278,7 @@ async function confirmGeminiWebTokens() {
         const secure1psidts = secure1psidtsInput.value.trim();
 
         if (!email || !secure1psid || !secure1psidts) {
-            showError('Please enter email, Secure-1PSID and Secure-1PSIDTS');
+            showError(window.t('settings.operation_failed', { error: window.t('settings.auth.gemini_web_error_missing') }));
             return;
         }
 
@@ -287,15 +288,15 @@ async function confirmGeminiWebTokens() {
         const result = await configManager.saveGeminiWebTokens(secure1psid, secure1psidts, email);
 
         if (result.success) {
-            showSuccessMessage('Gemini Web tokens saved successfully');
+            showSuccessMessage(window.t('settings.success'));
             // Refresh the auth files list
             await loadAuthFiles();
         } else {
-            showError('Failed to save Gemini Web tokens: ' + (result.error || 'Unknown error'));
+            showError(result.error ? window.t('settings.operation_failed', { error: result.error }) : window.t('settings.failed'));
         }
     } catch (error) {
         console.error('Error saving Gemini Web tokens:', error);
-        showError('Failed to save Gemini Web tokens: ' + error.message);
+        showError(window.t('settings.operation_failed', { error: error.message }));
     }
 }
 
@@ -316,7 +317,8 @@ function uploadLocalFile() {
         }
         const invalidFiles = files.filter(file => !file.name.toLowerCase().endsWith('.json'));
         if (invalidFiles.length > 0) {
-            showError(`Please select only JSON files. Invalid files: ${invalidFiles.map(f => f.name).join(', ')}`);
+            const fileList = invalidFiles.map(f => f.name).join(', ');
+            showError(window.t('settings.auth.upload_invalid_type').replace('{files}', fileList));
             document.body.removeChild(fileInput);
             return;
         }
@@ -325,7 +327,7 @@ function uploadLocalFile() {
             await loadAuthFiles();
         } catch (error) {
             console.error('Error uploading files:', error);
-            showError('Failed to upload files');
+            showError(window.t('settings.failed'));
         } finally {
             document.body.removeChild(fileInput);
         }
@@ -337,20 +339,28 @@ async function uploadFilesToServer(files) {
     try {
         const result = await configManager.uploadAuthFiles(files);
         if (result.success && result.successCount > 0) {
-            showSuccessMessage(`Uploaded ${result.successCount} file(s) successfully`);
+            const fileText = result.successCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
+            showSuccessMessage(window.t('settings.auth.upload_success_count').replace('{count}', result.successCount).replace('{fileText}', fileText));
         }
         if (result.errorCount > 0) {
-            const errorMessage = result.errors && result.errors.length <= 3
-                ? `Failed to upload ${result.errorCount} file(s): ${result.errors.join(', ')}`
-                : `Failed to upload ${result.errorCount} file(s)`;
-            showError(errorMessage);
+            const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
+            if (result.errors && result.errors.length <= 3) {
+                showError(window.t('settings.auth.upload_failed_details')
+                    .replace('{count}', result.errorCount)
+                    .replace('{fileText}', fileText)
+                    .replace('{details}', result.errors.join(', ')));
+            } else {
+                showError(window.t('settings.auth.upload_failed_count')
+                    .replace('{count}', result.errorCount)
+                    .replace('{fileText}', fileText));
+            }
         }
         if (result.error) {
-            showError(result.error);
+            showError(window.t('settings.operation_failed', { error: result.error }));
         }
     } catch (error) {
         console.error('Error uploading files:', error);
-        showError('Failed to upload files');
+        showError(window.t('settings.failed'));
     }
 }
 
@@ -363,24 +373,26 @@ async function uploadSingleFile(file, apiUrl, password) {
 async function downloadSelectedAuthFiles() {
     if (selectedAuthFiles.size === 0 || downloadBtn.disabled) return;
     downloadBtn.disabled = true;
-    downloadBtn.textContent = 'Downloading...';
+    downloadBtn.textContent = window.t('settings.auth.downloading');
     try {
         const result = await configManager.downloadAuthFiles(Array.from(selectedAuthFiles));
         if (result.success && result.successCount > 0) {
-            showSuccessMessage(`Downloaded ${result.successCount} file(s) successfully`);
+            const fileText = result.successCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
+            showSuccessMessage(window.t('settings.auth.download_success_count').replace('{count}', result.successCount).replace('{fileText}', fileText));
         }
         if (result.errorCount > 0) {
-            showError(`Failed to download ${result.errorCount} file(s)`);
+            const fileText = result.errorCount === 1 ? window.t('settings.auth.file') : window.t('settings.auth.files');
+            showError(window.t('settings.auth.download_failed_count').replace('{count}', result.errorCount).replace('{fileText}', fileText));
         }
         if (result.error) {
-            showError(result.error);
+            showError(window.t('settings.operation_failed', { error: result.error }));
         }
     } catch (error) {
         console.error('Error downloading files:', error);
-        showError('Failed to download files');
+        showError(window.t('settings.failed'));
     } finally {
         downloadBtn.disabled = false;
-        downloadBtn.textContent = 'Download';
+        downloadBtn.textContent = window.t('settings.auth.download');
     }
 }
 

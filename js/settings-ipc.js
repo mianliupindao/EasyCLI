@@ -5,7 +5,7 @@ function showProcessClosedError(message) {
     setTimeout(() => {
         // Prefer Tauri backend command to open a proper login window
         if (typeof window !== 'undefined' && window.__TAURI__ && window.__TAURI__.core) {
-            try { window.__TAURI__.core.invoke('open_login_window'); return; } catch (_) { }
+            try { window.__TAURI__.core.invoke('open_login_window', { title: window.t('brand') }); return; } catch (_) { }
         }
         // Fallback only if Tauri unavailable
         window.location.href = 'login.html';
@@ -22,7 +22,7 @@ if (window.__TAURI__?.event?.listen) {
                 console.error('Error stopping keep-alive on process close:', error);
             });
         }
-        showProcessClosedError(data.message || 'CLIProxyAPI process has closed');
+        showProcessClosedError(data.message || window.t('settings.process_closed'));
     });
 
     window.__TAURI__.event.listen('process-exit-error', (event) => {
@@ -34,7 +34,7 @@ if (window.__TAURI__?.event?.listen) {
                 console.error('Error stopping keep-alive on process exit error:', error);
             });
         }
-        showProcessClosedError(`CLIProxyAPI process exited abnormally, exit code: ${errorData.code}`);
+        showProcessClosedError(window.t('settings.process_exited') + `: ${errorData.code}`);
     });
 
     window.__TAURI__.event.listen('cliproxyapi-restarted', (event) => {
@@ -46,6 +46,6 @@ if (window.__TAURI__?.event?.listen) {
                 console.error('Error starting keep-alive on process restart:', error);
             });
         }
-        showSuccessMessage('CLIProxyAPI process restarted successfully!');
+        showSuccessMessage(window.t('settings.process_restarted'));
     });
 }
